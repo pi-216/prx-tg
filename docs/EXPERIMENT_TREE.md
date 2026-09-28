@@ -23,10 +23,28 @@ starts here — an arm whose `tree_path[0]` is anything else is off-goal by cons
   face" resolves *somewhere near the valid centroid* of that description in the identity space.
 * A **visualizer**, which should/could be text-to-image (ponytail, no makeup, wearing glasses, …).
 
+**What "identity" means here — stated so it is not re-litigated.** The criterion is
+**consistency across renders**: the same point in identity space renders as the same person
+every time — across noise seeds, across pose, across training steps. Agreement with a *real
+person* is **not** a goal and never was: the identity space is huge, and it very likely contains
+more valid combinations than there are real people to compare against. A recogniser score
+(R@1 against real faces) measures something the product does not ask for — it is not a fidelity
+metric, and its being at chance is not a defect. (EIR's ledger already flagged this reading as
+"must not be scored as an identity failure"; this states the positive criterion.)
+
 **Current focus — the hurdle under this goal:** **high-fidelity** image generation, based on
-identity-space and pose definition. Fidelity is the operative term and it is a *product*
-criterion (is the rendered person a high-quality, convincing image of that identity?), not a
-recogniser score.
+identity-space and pose definition. Fidelity is the operative term, and it is a *product*
+criterion — is this a high-quality, convincing image of *that identity*? — not a recogniser score.
+
+**Scope boundaries (recorded so a future arm does not wander into them):**
+* **Identity-space dials — a different project.** Which direction in identity space a dial moves
+  is work that lives outside this repo.
+* **Pose — a regression clause, not the goal.** Pose is the *next* question after fidelity. The
+  yaw response already demonstrated (`z_g` dim0 → yaw, monotone, correct sign) must stay
+  **testable**: every fidelity arm carries a yaw check, so the ability to measure pose is never
+  lost while we work on something else. The other dials in `z_g` **cannot be named yet because
+  the fidelity is not there** — a low-fidelity render cannot tell you what a geometry dial does.
+  Pose is deferred, not dropped.
 
 **The carriers are hypotheses, not settled decisions.** The current concept is that identity
 space is *somehow connected to the LDA* (64-d AuraFace-LDA today) and that pose — possibly

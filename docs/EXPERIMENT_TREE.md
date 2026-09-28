@@ -188,8 +188,11 @@ Foundational 4-arm sweep isolating TREAD, Muon, and REPA contributions on 7k FFH
     identity space very likely holds more valid combinations than there are real people. The
     gate is recorded here as the gate *as it was frozen* — history, not a criterion. R@1 is
     retired as a quality metric; the render-fidelity criterion is the one that matters now.
-  * **Residue:** `eir-launcher.timer` and `eir-heartbeat.timer` (1k-segment GPU machinery) belong
-    to this concluded arm and must be retired before any new arm claims the 4090.
+  * **Residue — RETIRED 2026-09-28:** `eir-launcher.timer` and `eir-heartbeat.timer` (the
+    1k-segment GPU machinery that drove this run) are now `disabled` — both were
+    `disable --now`ed by the operator, unit files left on disk (so `systemctl --user enable
+    --now …` re-arms them). Verified after: 0 `eir-*` timers listed, no trainer process. No
+    timer watches this arm any more, and the arm holds no claim on the 4090.
 
 ---
 

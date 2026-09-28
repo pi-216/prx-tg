@@ -1,52 +1,61 @@
 # eidolon-identity-renderer (Arm EIR)
 
-**Status:** `ACTIVE` — 10k run in progress. Blocks 1–8 complete (checkpoints 1000–8000);
-block 9 (8000→9000) running. Last block release 2026-09-26 21:05. Expected finish
-(10k) ~04:30–05:00 on 2026-09-27.
+**Status:** `CONCLUDED — PIVOT` (2026-09-27). The 10k run finished; verdict, scorecard and
+adversarial pass are in `docs/EXPERIMENTS_AND_RESULTS.md` under *eidolon-identity-renderer*.
+**Machinery retired 2026-09-28** — `eir-launcher.timer` / `eir-heartbeat.timer` are
+`disabled` (unit files remain on disk, so `systemctl --user enable --now …` re-arms them).
 **Mode:** `confirmatory` (gate frozen before the first run — see `provenance.yaml`)
-**Branch:** `arm/eidolon-identity-renderer` · **Tag:** `arm/eidolon-identity-renderer/registered`
+**Branch:** `arm/eidolon-identity-renderer` · **Tags:** `…/registered`, `…/concluded-PIVOT`
 **Run dir (NAS):** `experiments/eidolon-identity-renderer/runs/2026-09-25_0734/`
 **Run provenance:** `git_commit b345e64`, `git_dirty false`
 
 > **Read `provenance.yaml` first for the findings** — it carries the full diagnostic record
 > (`pose_diagnostics`, `axis_verification`, `pre_registration_evidence`) with numbers and
-> evidence paths. This README is the operational handoff: how to see where the run is, what
-> is settled, and what to do at the verdict.
+> evidence paths, plus the arm's `serves:` / `tree_path:` / `return_question:` (answered
+> `PIVOTED`). This README is the operational record: what was run, what is settled, and what
+> remains open.
+>
+> **⚠️ The goal has since been restated.** Arm EIR's own goal node read *"render a chosen
+> identity at a chosen pose"* with no fidelity term, and its return question asked whether a
+> real *recogniser* agrees. The root node in `docs/EXPERIMENT_TREE.md` now carries the product
+> criterion instead: identity means **consistency across renders**, not agreement with a real
+> person. Read the root before reusing any metric from this arm.
 
 ---
 
 ## 0. How to see where things stand (copy-paste)
 
+The run is **complete**; there is no live step to poll. To inspect the finished record:
+
 ```bash
 cd /home/tim/source/activity/prx-tg
 RUN=/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734
 
-# live step + loss (last logged row)
+# final logged step + loss
 .venv/bin/python -c "
 import json
 rows=[json.loads(l) for l in open('$RUN/training_log.jsonl') if l.strip()]
 rows=[r for r in rows if 'step' in r and 'loss' in r]
 r=rows[-1]; print(r['step'], 'loss %.3f'%r['loss'], 'lr %.2e'%r['lr'], 'grad %.2f'%r['grad_norm'])"
 
-# the two timers that drive the run
-tail -3 /tmp/eir_launcher.log       # 30-min tick: launch/idle decisions
-tail -3 /tmp/eir_heartbeat.log      # 5-min tick: stop at boundary + release the claim
-systemctl --user list-timers 'eir-*' --no-pager
-
-# GPU arbitration
-.venv/bin/python /mnt/nas-ai-models/gpu-scheduler/gpu_scheduler.py status
-
 # artefacts
-ls $RUN/checkpoints/ | tail -3
-ls $RUN/validation/ | tail -3
+ls $RUN/checkpoints/          # checkpoint_final.pt is the 10k endpoint
+ls $RUN/validation/           # per-boundary results.json
+ls $RUN/audit_trajectory/     # 25 trajectory panels (NAS-side evidence)
+
+# GPU arbitration (claim truth is state.json, never the job file)
+.venv/bin/python /mnt/nas-ai-models/gpu-scheduler/gpu_scheduler.py status
 ```
 
-**Machinery (all systemd user units, not Hermes cron):** `eir-launcher.timer` (30 min) +
-`eir-heartbeat.timer` (5 min). The trainer lives in tmux session `eir-full`. Work is run in
-**1,000-step segments**: the launcher reserves the GPU only to the next 1k boundary, the
-heartbeat stops the trainer after that boundary's validation completes, releases the claim,
-and the next tick resumes from `checkpoint_interrupt.pt`. Bound release happens **after**
-validation — that is deliberate, so a boundary never kills an unvalidated block.
+**Machinery — RETIRED 2026-09-28; this paragraph is history, not instructions.**
+The run was driven by two systemd **user** units (not Hermes cron): `eir-launcher.timer`
+(30 min) + `eir-heartbeat.timer` (5 min), with the trainer in tmux session `eir-full`. Work ran
+in **1,000-step segments**: the launcher reserved the GPU only to the next 1k boundary, the
+heartbeat stopped the trainer after that boundary's validation completed and released the
+claim, and the next tick resumed from `checkpoint_interrupt.pt`. Release happened **after**
+validation — deliberate, so a boundary never killed an unvalidated block. Both timers are now
+`disabled`, because the unit that owns the right to claim the 4090 must not keep watching a
+finished arm. Logs: `/tmp/eir_launcher.log`, `/tmp/eir_heartbeat.log`.
 
 > **`eir-launcher.service` MUST keep `KillMode=process`.** It is `Type=oneshot`; with the
 > default `KillMode=control-group` systemd tears down the unit's whole cgroup — including
@@ -63,7 +72,11 @@ validation — that is deliberate, so a boundary never kills an unvalidated bloc
 
 ---
 
-## 1. State of play (numbers as of the 8000 boundary)
+## 1. State of play (mid-run snapshot, as of the 8000 boundary)
+
+> The run finished at **10,000 steps**. This table is the snapshot taken at the 8000 boundary and
+> is kept as-is; the full 10-checkpoint trajectory (identity and geometry, with `results.json`
+> artifacts) is in the ledger entry and in `provenance.yaml`.
 
 | step | 1000 | 2000 | 3000 | 4000 | 5000 | 6000 | 7000 | 8000 |
 |---|---|---|---|---|---|---|---|---|
@@ -227,6 +240,13 @@ set — both are monitored in-training and used for the verdict.
 ---
 
 ## 9. Next actions
+
+> **Status: §9.1 and §9.2 are DONE** (verdict 2026-09-27 — gate amendment written, blur control
+> run, render-to-render retrieval run, ±1.5σ sweep row run, ledger entry + numbered conclusions
+> written, tag applied, blog brief outstanding). **§9.3 is the forward work**, and it now runs
+> under the restated goal: read the root node in `docs/EXPERIMENT_TREE.md` first — the next arm
+> serves *render fidelity*, with yaw carried as a regression clause, and the identity criterion
+> is consistency across renders rather than recogniser agreement.
 
 ### 9.1 Before the verdict (time-critical)
 

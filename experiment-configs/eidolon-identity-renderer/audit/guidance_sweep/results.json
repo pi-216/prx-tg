@@ -1,0 +1,257 @@
+{
+  "script": "scripts/diag_render_guidance_sweep.py",
+  "repo": "/home/tim/source/activity/prx-tg",
+  "command_line": "/home/tim/source/activity/prx-tg/scripts/diag_render_guidance_sweep.py --checkpoint /mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/checkpoints/checkpoint_step0010000.pt --out-dir /mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep",
+  "config": "/home/tim/source/activity/prx-tg/experiment-configs/eidolon-identity-renderer/config.yaml",
+  "checkpoint": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/checkpoints/checkpoint_step0010000.pt",
+  "checkpoint_size_bytes": 2823460190,
+  "checkpoint_mtime_ns": 1790500328021117620,
+  "git_head": "d8cbd035cfd004574a4e900d7a6a4d3b134a377c",
+  "git_dirty": true,
+  "git_dirty_entries": 1,
+  "device": "cuda",
+  "seed": 1234,
+  "noise": "torch.manual_seed(seed) immediately before every generation, no seed= passed to the sampler (diag_pose_cfg_sweep.py convention); the initial latent draw is identical in every cell of this run",
+  "sample_indices": [
+    10,
+    30,
+    50
+  ],
+  "generation_shape": [
+    1,
+    16,
+    128,
+    128
+  ],
+  "latent_space": true,
+  "gamma": 1.0,
+  "prediction_type": "x_prediction",
+  "model_params": 235223234,
+  "control_cell": "id3_geo2_steps50",
+  "face_detector": "scripts/dwpose_onnx.DWPoseDetector(device=cpu)",
+  "cells": [
+    {
+      "name": "id3_geo2_steps50",
+      "identity_scale": 3.0,
+      "geometry_scale": 2.0,
+      "num_steps": 50,
+      "is_control": true,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id3_geo2_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5983456373214722,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id3_geo2_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5971909761428833,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id3_geo2_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5947481393814087,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id3_geo2_steps50_cols=samples[10,30,50].png"
+    },
+    {
+      "name": "id1_geo1_steps50",
+      "identity_scale": 1.0,
+      "geometry_scale": 1.0,
+      "num_steps": 50,
+      "is_control": false,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id1_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.595799446105957,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id1_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5863417983055115,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id1_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5985241532325745,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id1_geo1_steps50_cols=samples[10,30,50].png"
+    },
+    {
+      "name": "id1.5_geo1_steps50",
+      "identity_scale": 1.5,
+      "geometry_scale": 1.0,
+      "num_steps": 50,
+      "is_control": false,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id1.5_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5994573831558228,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id1.5_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.587726354598999,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id1.5_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.6018542647361755,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id1.5_geo1_steps50_cols=samples[10,30,50].png"
+    },
+    {
+      "name": "id2_geo1_steps50",
+      "identity_scale": 2.0,
+      "geometry_scale": 1.0,
+      "num_steps": 50,
+      "is_control": false,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id2_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5988696217536926,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id2_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.5851161479949951,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id2_geo1_steps50.png",
+          "face_detected": true,
+          "det_conf": 0.6017003059387207,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id2_geo1_steps50_cols=samples[10,30,50].png"
+    },
+    {
+      "name": "id1_geo1_steps100",
+      "identity_scale": 1.0,
+      "geometry_scale": 1.0,
+      "num_steps": 100,
+      "is_control": false,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id1_geo1_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.5981436371803284,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id1_geo1_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.5881693959236145,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id1_geo1_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.5940384268760681,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id1_geo1_steps100_cols=samples[10,30,50].png"
+    },
+    {
+      "name": "id3_geo2_steps100",
+      "identity_scale": 3.0,
+      "geometry_scale": 2.0,
+      "num_steps": 100,
+      "is_control": false,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s10_id3_geo2_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.605213463306427,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s30_id3_geo2_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.6102275252342224,
+          "n_keypoints": 133
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "panel_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/s50_id3_geo2_steps100.png",
+          "face_detected": true,
+          "det_conf": 0.5915988683700562,
+          "n_keypoints": 133
+        }
+      ],
+      "no_face_panels": 0,
+      "panels": 3,
+      "sheet_path": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/sheet_id3_geo2_steps100_cols=samples[10,30,50].png"
+    }
+  ],
+  "panels_total": 18,
+  "no_face_panels_total": 0,
+  "notes": [
+    "latent-space arm: latents sampled at 16ch x 128x128 and VAE-decoded to RGB via production/sample.py decode_latents.",
+    "Every panel in this run shares one initial latent draw (seed 1234); cells differ only in identity guidance, geometry guidance and step count."
+  ],
+  "comparison_sheet": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/guidance_sweep/comparison_rows=samples[10,30,50]_cols=[id3_geo2_steps50,id1_geo1_steps50,id1.5_geo1_steps50,id2_geo1_steps50,id1_geo1_steps100,id3_geo2_steps100].png"
+}

@@ -521,3 +521,61 @@ Four arms (P, P2, P3, P4), three base models (vanilla SD1.5, pose-stripped SD1.5
 - Gates: `research/avenues/gates/gamma2-noise-scale/10000/gates.jsonl`
 - Validation: `.../validation/step0010000/` · visual_debug `.../visual_debug/step0010000/` · quality_metrics `.../quality_metrics/step0010000/`
 - Registry: `research/avenues/registry.json` (dip-conv-head parked `blocked` same commit)
+
+---
+
+## eidolon-identity-renderer — `[CONCLUDED — PIVOT]`
+
+**Date:** 2026-09-27
+**Arm:** `experiment-configs/eidolon-identity-renderer/` — branch `arm/eidolon-identity-renderer`, tag `arm/eidolon-identity-renderer/concluded-PIVOT`
+**Run:** `experiments/eidolon-identity-renderer/runs/2026-09-25_0734/` — complete, 10,000 steps, `git_commit b345e64`, `git_dirty false`
+
+**Goal:** one model that binds a 64-d identity vector AND obeys a 50-d pose vector in FLUX-VAE latent space, so a chosen identity renders as the same person across poses.
+
+**Pre-registered gate:** Tier 1 mechanism gate from `gate_amendment_2026-09-26`, stated before the verdict was scored.
+
+### Empirical evidence
+
+| M | Result | Verdict |
+|---|---|---|
+| M1 identity binding + seed-invariance | 0.9943 mean cosine (floor 0.9917) | PASS |
+| M2a render-to-render retrieval | R@1 1.0000 CI [1.0000,1.0000], saturated from step 1000 | PASS |
+| M2b quality-controlled margin | render->real 0.0303 vs quality-matched real 1.0000; render HF energy 446.7 is ABOVE clean real 191.7 | FAIL |
+| M3a geometry monotonicity @ +/-1.5 sigma | monotone in all twelve rows at step 10000 | PASS |
+| M3b occlusion asymmetry | inter-ocular widens 7-12% where real faces hold ~1.00 | FAIL |
+| M4 no collapse | holds | PASS |
+| M5 instrument validation | Arm O step 5000 monotone 8-15 px | PASS |
+| memorization signature | not scored | - |
+
+**Identity across training (5 checkpoints, one fixed protocol, intra-sample temporal tracking):** render->real R@1 flat at chance at every checkpoint - 0.000 / 0.027 / 0.000 / 0.031 / 0.029 against chance 0.0256; only the cosine margin creeps (+0.0026 -> +0.0036). Render->render is 1.0000 from step 1000. Detectability moves once (no_face 28/40 -> 3/40 between 1000 and 3000) then plateaus.
+
+**Geometry across training:** absent at 3000, emerges at 5000, ~5x by 7000, STILL CLIMBING at 10000 (geoonly 0/4 spread 0.050 / 0.213 / 0.277). This retracts the arm's earlier "converging by 8000" reading.
+
+### Adversarial pass
+
+- [x] Metric code under test - producing scripts committed (`scripts/diag_identity_render_to_render.py`, `scripts/diag_eidolon_zg_dilution.py`, plus readers under the arm's `audit/`)
+- [x] Metric definition stable across compared checkpoints - one fixed protocol: same pool, same seeds, same index size, 40 requested samples, 50 steps, identity 3.0 / geometry 2.0
+- [x] Result reproduced - the step-5000 geometry numbers reproduce the independent 2026-09-26 read (12-20 px = 0.049-0.082) to within the expected spread
+- [x] Extremes and edge cases inspected - `no_face` reported on every probe; the step-1000 row (only 12/40 measurable) is flagged thin rather than silently pooled
+- [x] Headline numbers traced to exact artifacts - 10 `results.json` in `experiment-configs/eidolon-identity-renderer/audit/trajectory/`, 25 panels under the run's `audit_trajectory/` on the NAS
+- [x] Every flaw found in review fixed or explicitly gated-not-fixed - M3b is GATED: identity-preservation-under-pose is not scored on the inter-ocular axis until the projection artifact is fixed
+- [x] Sanity check named that would FAIL if the instrument were broken - the Arm O positive control (dense-support ladder gives 8-15 px monotone at step 5000); it fires
+
+**Verdict: PIVOT** - not PASS, not KILL.
+
+### What worked / what did not
+
+**Worked:** geometry conditioning (dim0 is a proven 3D rotation axis in the data - |r| 0.9443 vs yaw, quintile dip -0.0411 against a yaw-predicted -0.0386; and the render follows it monotonically, still improving at the end of the schedule). Identity *encoding* and stability (render-to-render 1.0000 from step 1000; seed-invariance 0.9943). The operator-level product behaviour: pick an identity, render it, move the pose dials, and get the same person in a different pose.
+
+**Did not work:** identity *grounding* - flat at chance for all ten thousand steps. This is structural, not budgetary: the objective is latent x0 prediction, and the model satisfies it without grounding identity to real faces. And the render's semantic completeness - hair and hairlines, hair length, ears, teeth, non-segmentable lips, cheekbones - where the deficit is MISSING STRUCTURE, not smoothness (M2b: the render's HF energy exceeds clean real faces).
+
+### New direction (the return edge = PIVOTED, node rewritten)
+
+One level up: restate the renderer stage's goal and its honest metric. The stage goal is a *controllable* renderer, not agreement with a recogniser; the fidelity criterion belongs to the stage where the semantic features it depends on exist. The render itself is the open problem, and the first measurement is whether the garbling is partly our own sampling choice: every image judged in this closure was rendered at identity CFG 3.0 x geometry 2.0 with three-pass dual CFG, with ladders running to 8x and 10x.
+
+### Artifacts
+
+- Provenance: `experiment-configs/eidolon-identity-renderer/provenance.yaml` (`verdict_2026-09-27`, `identity_and_geometry_trajectory_2026-09-27`)
+- Trajectory data (git, 552 KB): `experiment-configs/eidolon-identity-renderer/audit/trajectory/`
+- Trajectory panels (NAS, 454 MB): `.../runs/2026-09-25_0734/audit_trajectory/`
+- Run: `experiments/eidolon-identity-renderer/runs/2026-09-25_0734/`

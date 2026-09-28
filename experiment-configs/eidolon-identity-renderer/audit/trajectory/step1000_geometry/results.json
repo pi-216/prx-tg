@@ -1,0 +1,511 @@
+{
+  "config": "/home/tim/source/activity/prx-tg/experiment-configs/eidolon-identity-renderer/config.yaml",
+  "checkpoint": "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/checkpoints/checkpoint_step0001000.pt",
+  "sweep_dim": 0,
+  "sweep_values": [
+    -3.0,
+    -1.5,
+    0.0,
+    1.5,
+    3.0
+  ],
+  "sample_indices": [
+    10,
+    30,
+    50
+  ],
+  "seed": 1234,
+  "num_steps": 50,
+  "gamma": 1.0,
+  "latent_space": true,
+  "cfg_configs": [
+    {
+      "name": "fullcfg_id3_geo2",
+      "identity_scale": 3.0,
+      "geometry_scale": 2.0
+    },
+    {
+      "name": "geoonly_id0_geo4",
+      "identity_scale": 0.0,
+      "geometry_scale": 4.0
+    },
+    {
+      "name": "geoonly_id0_geo10",
+      "identity_scale": 0.0,
+      "geometry_scale": 10.0
+    },
+    {
+      "name": "id1_geo8",
+      "identity_scale": 1.0,
+      "geometry_scale": 8.0
+    }
+  ],
+  "notes": [
+    "60/60 panels had no detectable face; their yaw is recorded as null and excluded from spread/monotonicity. No value was substituted.",
+    "latent-space arm: latents sampled at 16ch x 128x128 and VAE-decoded to RGB."
+  ],
+  "configs": [
+    {
+      "name": "fullcfg_id3_geo2",
+      "identity_scale": 3.0,
+      "geometry_scale": 2.0,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "base_zg_dim0": -0.44044360518455505,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "base_zg_dim0": -0.17061088979244232,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "base_zg_dim0": -0.08720739930868149,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        }
+      ]
+    },
+    {
+      "name": "geoonly_id0_geo4",
+      "identity_scale": 0.0,
+      "geometry_scale": 4.0,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "base_zg_dim0": -0.44044360518455505,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "base_zg_dim0": -0.17061088979244232,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "base_zg_dim0": -0.08720739930868149,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        }
+      ]
+    },
+    {
+      "name": "geoonly_id0_geo10",
+      "identity_scale": 0.0,
+      "geometry_scale": 10.0,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "base_zg_dim0": -0.44044360518455505,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "base_zg_dim0": -0.17061088979244232,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "base_zg_dim0": -0.08720739930868149,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        }
+      ]
+    },
+    {
+      "name": "id1_geo8",
+      "identity_scale": 1.0,
+      "geometry_scale": 8.0,
+      "samples": [
+        {
+          "sample_idx": 10,
+          "image_id": "00010",
+          "base_zg_dim0": -0.44044360518455505,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 30,
+          "image_id": "00030",
+          "base_zg_dim0": -0.17061088979244232,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        },
+        {
+          "sample_idx": 50,
+          "image_id": "00050",
+          "base_zg_dim0": -0.08720739930868149,
+          "sweep_values": [
+            -3.0,
+            -1.5,
+            0.0,
+            1.5,
+            3.0
+          ],
+          "yaw_proxy": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "det_conf": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "n_keypoints": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "no_face_panels": 5,
+          "yaw_spread": null,
+          "monotone": null
+        }
+      ]
+    }
+  ],
+  "panels_total": 60,
+  "no_face_panels_total": 60
+}

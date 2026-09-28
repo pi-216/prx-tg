@@ -236,6 +236,102 @@ zg_dim0_projection_signature_2026-09-27:
     results: experiment-configs/eidolon-identity-renderer/audit/dim0_projection_signature/results_seed7.json
     figure: experiment-configs/eidolon-identity-renderer/audit/dim0_projection_signature/zg_dim0_projection_signature.png
 
+verdict_2026-09-27:
+  verdict: PIVOT
+  authority: >-
+    Operator decision 2026-09-27, made after the trajectory results were on the table and before this block was
+    written: "Conclude, but its a pivot, I think we learned something but we need to go up one level and
+    re-evaluate the goal." Recorded as PIVOT, not KILL: the approach is not disproven as a whole, and this
+    closure carries NO DISCONTINUATION_NOTICE - that artifact is KILL-only.
+  scope: >-
+    Scored against the Tier 1 mechanism gate of gate_amendment_2026-09-26, over the COMPLETE 10k run.
+  tier1_scorecard:
+    M1_identity_binding_seed_invariance: "PASS - 0.9943 mean cosine across seeds (floor 0.9917)"
+    M2a_render_to_render_retrieval: "PASS - R@1 1.0000, CI [1.0000,1.0000], saturated from step 1000"
+    M2b_quality_controlled_margin: "FAIL - render->real R@1 0.0303 vs quality-matched real 1.0000; the render is grain-dominated, not blurred"
+    M3a_geometry_monotonicity: "PASS - monotone in all twelve rows at step 10000"
+    M3b_geometry_occlusion_asymmetry: "FAIL - inter-ocular widens 7-12% where the real-face band holds ~1.00 (projection artifact)"
+    M4_no_collapse: "PASS"
+    M5_instrument_validation: "PASS - Arm O step 5000 monotone 8-15 px"
+    memorization_signature: "UNSCORED"
+  what_worked:
+    - "Geometry conditioning is real and was STILL IMPROVING when the budget ran out: absent at 3000, emerges at 5000, ~5x by 7000, still rising at 10000 (geoonly 0/4 spread 0.050 -> 0.213 -> 0.277); dim0 is a proven 3D rotation axis in the data (|r| 0.9443 vs yaw; quintile inter/median dip -0.0411 against a yaw-predicted -0.0386, RMS 0.0034 vs 0.0254 for the shear alternative)."
+    - "Identity is ENCODED and stable: render-to-render R@1 1.0000 at every checkpoint from step 1000; seed-invariance 0.9943."
+    - "The identity manifold is controllable in the product sense: distinct identities render as distinct people, and the swap test isolates identity with geometry held fixed."
+    - "Detectability improved sharply once then plateaued (no_face 28/40 at 1000 -> 3/40 at 3000)."
+  what_did_not_work:
+    - "Identity GROUNDING never starts: render->real R@1 flat at chance for all ten thousand steps (0.000/0.027/0.000/0.031/0.029 vs chance 0.0256), only the cosine margin creeping (+0.0026 -> +0.0036). Structural, not budgetary: the objective is latent x0 prediction and the model satisfies it without grounding identity to real faces."
+    - "The render is not yet a face a recogniser can read: semantic completeness is missing (hair and hairlines, hair length, ears, teeth, non-segmentable lips, cheekbones) and everything outside the face is garbled."
+    - "The render's own geometry response is a projection artifact on the inter-ocular axis (widens 7-12% where real faces hold ~1.00), so identity-preservation-under-pose cannot yet be scored on it."
+  return_edge_reconstruction:
+    _reconstructed: true
+    _from: "docs/briefings/2026-09-24_prx-tg_persona-vector-visualization-brief.md and this arm's own README, both contemporaneous with the arm; not back-filled by guesswork."
+    serves: "the eidolon renderer node - turn a point in the 64-d identity space plus a pose vector into an image of that person"
+    tree_path: ["goal: render a chosen identity at a chosen pose", "hurdle: make one model bind identity and obey geometry at the same time", "this arm: eidolon-identity-renderer"]
+    return_question: "Does the renderer condition on identity in a way a real recogniser agrees with, while obeying geometry?"
+    return_answer: PIVOTED
+    return_answer_reason: >-
+      Answered, and the NODE IS RE-WRITTEN rather than cleared. Identity grounding did not appear - but the
+      operator re-evaluated one level up: agreement with a real recogniser is not the goal of THIS stage. The
+      stage goal is a controllable renderer - pick a point in identity space, move dials that move the point,
+      render that identity, move dials that move the pose - and that works. The fidelity criterion belongs to the
+      stage where the semantic features it depends on actually exist.
+  new_direction: >-
+    ONE LEVEL UP. Before any further arm, restate the renderer stage's goal and its honest metric. Operator's
+    framing: "we are focusing on the renderer. we need to get the render straight." The render itself is the open
+    problem - its semantic completeness, not its smoothness (M2b: the render's high-frequency energy 446.7 is
+    ABOVE clean real faces at 191.7, so the deficit is MISSING STRUCTURE, not blur). Candidate causes, three cheap:
+    (1) our own sampling settings - every image judged tonight was rendered at identity CFG 3.0 x geometry 2.0
+    with three-pass dual CFG, and the ladders ran to 8x and 10x, so part of the observed garbling may be guidance
+    we chose; (2) the VAE ceiling - ALREADY TESTED, result not located in this repo (see ledger_debt); (3) budget -
+    indicated for geometry, NOT for identity grounding.
+  ledger_debt:
+    - "The VAE test result exists and is recorded NOWHERE in this repo. It belongs in docs/EXPERIMENTS_AND_RESULTS.md as a shared cross-arm fact, not an arm-local file. Three separate facts have now been re-proposed in one session because knowledge did not travel: the VAE test, the z_g encoder identity, and the retracted pose-invariance probe."
+  artifacts:
+    provenance: experiment-configs/eidolon-identity-renderer/provenance.yaml
+    trajectory_data_soft: "experiment-configs/eidolon-identity-renderer/audit/trajectory/ - 10 results.json + 2 runner scripts (git, 552KB)"
+    trajectory_panels_hard: "/mnt/nas-ai-models/training-data/prx-tg/eidolon-identity-renderer/runs/2026-09-25_0734/audit_trajectory/ - 25 panels, 454MB, step-prefixed"
+    run: experiments/eidolon-identity-renderer/runs/2026-09-25_0734/
+identity_and_geometry_trajectory_2026-09-27:
+  question: "Does identity move toward its goal as training progresses? Before this the arm had only two unpaired identity points (step 8000 and 9000, different pools)."
+  method: >-
+    scripts/diag_identity_render_to_render.py + scripts/diag_eidolon_zg_dilution.py at five checkpoints
+    (1000/3000/5000/7000/10000) of run 2026-09-25_0734, ONE FIXED PROTOCOL each (same 51-sample pool, same
+    seeds, same index size, 40 requested samples, 50 steps, identity 3.0 / geometry 2.0). Queued through the
+    GPU scheduler as prx-tg-eir-trajectory-v1; ~28.6 min per checkpoint, 5/5 complete, all probes exit 0.
+    Intra-sample temporal tracking, not cross-sample aggregation.
+  identity:
+    render_to_render_R@1: "1.0000 at EVERY checkpoint (measured 12/37/33/32/34 of 40); chance 0.0909/0.0278/0.0312/0.0323/0.0303"
+    render_to_real_R@1: "0.0000 / 0.0270 / 0.0000 / 0.0312 / 0.0294 against chance 0.0256 - flat at chance for the whole run, no trend"
+    margin: "+0.0026 / +0.0032 / +0.0030 / +0.0033 / +0.0036 - a 38% rise that never reorders a single rank"
+    detectability: "no_face 28 -> 3 -> 7 -> 8 -> 6 of 40: the only thing that moves sharply is whether a face is detectable at all, and it moves once, between 1000 and 3000"
+    verdict: >-
+      IDENTITY FIDELITY DOES NOT MOVE. Ten thousand steps, five checkpoints, never above chance. Identity is
+      ENCODED (perfect self-consistency among renders from step 1000) but never GROUNDED in the recogniser's
+      space, and this training never starts grounding it. The objective is latent x0 prediction and the model
+      satisfies it without grounding identity to real faces: a STRUCTURAL gap, not a budget gap.
+      Metric design note: render-to-render is saturated at 1.0000 from step 1000, so it cannot serve as a
+      trajectory instrument; the cross-geometry variant is the correct future gate metric.
+  geometry:
+    geoonly_0_4_s10_s30_s50: "3000: 0.004/0.008/0.008 | 5000: 0.050/0.063/0.080 | 7000: 0.213/0.263/0.257 | 10000: 0.277/0.367/0.338"
+    geoonly_0_10: "3000: 0.012/0.013/0.013 | 5000: 0.129/0.137/0.144 | 7000: 0.234/0.380/0.311 | 10000: 0.313/0.452/0.434"
+    fullcfg_3_0_2_0: "5000: 0.029/0.037/0.038 | 7000: 0.191/0.187/0.213 | 10000: 0.242/0.281/0.263"
+    verdict: >-
+      STILL CLIMBING AT 10000. Absent at 3000, emerges at 5000, ~5x by 7000, still growing at the end of the
+      schedule, monotone decreasing in all twelve rows. RETRACTS this arm's earlier "flat 7000 -> 8000,
+      converging" reading: on the longer view the pose dial has NOT plateaued.
+  dissociation: >-
+    The two conditioning streams behave completely differently under the same objective: geometry is still
+    being learned, identity grounding never starts. Consequence for the next arm: BUDGET IS INDICATED FOR
+    GEOMETRY (a demonstrated rising target, and pose control is a product requirement) and NOT FOR IDENTITY
+    FIDELITY (five checkpoints say more steps will not move it - only a mechanism change will).
+  consistency_checks:
+    - "step-5000 geometry reproduces the earlier independent read: geoonly 0/4 0.0496-0.0801 here vs '12-20 px' = 0.049-0.082 reported 2026-09-26; fullcfg 0.029-0.038 vs '7-9 px' = 0.028-0.037 reported then."
+    - "run released cleanly: 4090 idle, queue empty, release watchdog logged a normal exit."
+  artifacts:
+    results: experiment-configs/eidolon-identity-renderer/audit/trajectory/ (per-checkpoint results.json + the 12 composite grids; the 200-odd individual renders stay regenerable in the pruned scratch dir)
+    runner: adventure in scratch/run_eir_trajectory.sh + scratch/watch_trajectory_release.sh (scratch is pruned - the protocol is fully described above and in the scripts' committed counterparts)
+
 operator_assessment_2026-09-27:
   context: "Step-10000 final artifacts reviewed visually by the operator (geometry sweeps, identity-swap collages, M2a contact sheet, one 10k reconstruction)."
   verbatim_core: >-

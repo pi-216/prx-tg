@@ -16,7 +16,7 @@ Last updated: 2026-09-24
     vs frozen real-FFHQ band; no 5k G0 baseline). Improved but not yet photorealistic;
     champion candidate vs 5k baseline, arm still `active` in registry.
 
-* **Arm EIR — `eidolon-identity-renderer`** (`experiment-configs/eidolon-identity-renderer/`) `[PLANNED — PRE-REGISTERED, NOT YET RUN]`
+* **Arm EIR — `eidolon-identity-renderer`** (`experiment-configs/eidolon-identity-renderer/`) `[CONCLUDED — PIVOT]` (2026-09-27; run 2026-09-25_0734 complete at 10k; verdict + scorecard in the ledger; entry still sits under the Active heading — move it)
   * Branch `arm/eidolon-identity-renderer`. From-scratch **FLUX-VAE latent** DiT (16ch, 128²,
     patch 2 — P1-shaped) carrying the Eidolon adapter: 64-d AuraFace-LDA identity via adaLN
     + z_g geometry via cross-attention, per-dim basis. **No text**, no REPA (hegre ships no

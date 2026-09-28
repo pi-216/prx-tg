@@ -72,26 +72,6 @@ carriers has not been shown to hold for the vision.
     vs frozen real-FFHQ band; no 5k G0 baseline). Improved but not yet photorealistic;
     champion candidate vs 5k baseline, arm still `active` in registry.
 
-* **Arm EIR — `eidolon-identity-renderer`** (`experiment-configs/eidolon-identity-renderer/`) `[CONCLUDED — PIVOT]` (2026-09-27; run 2026-09-25_0734 complete at 10k; verdict + scorecard in the ledger; entry still sits under the Active heading — move it)
-  * Branch `arm/eidolon-identity-renderer`. From-scratch **FLUX-VAE latent** DiT (16ch, 128²,
-    patch 2 — P1-shaped) carrying the Eidolon adapter: 64-d AuraFace-LDA identity via adaLN
-    + z_g geometry via cross-attention, per-dim basis. **No text**, no REPA (hegre ships no
-    `dinov3_patches`), no warm-start, no PP stage, no weight donor.
-  * Question: does the two-source LDA stream (FFHQ per-image vectors + hegre persona
-    centroids) produce a **generalizable** identity mapping, or per-image lookup?
-  * **Gate (frozen before the first run):** held-out identity retrieval, rank-based R@1 with a
-    bootstrap CI LB > 0.5 on all three probes — FFHQ unseen-identity fidelity (index 6,996,
-    ref ~1.0), hegre unseen-persona generalization (index 32, ref **0.9504**), hegre
-    persistence (index 313, ref **0.8180**). The ceiling is **index-size dependent**, so each
-    number is read against the ceiling measured at its own index size.
-  * **Holdout locked:** `experiment-configs/eidolon-identity-renderer/holdout.json`, seed `20260925` —
-    6,996 FFHQ identities (sha256 `2967fafac71f2a75`) + 32 hegre personas (sha256
-    `705936d1c0f3b805`), identities whose vectors are never fed in training, so the gate
-    measures generalization rather than recall.
-  * Instrument, measured before the arm exists: `research/results/eidolon-identity-instrument/`.
-  * Pre-registration: `experiment-configs/eidolon-identity-renderer/provenance.yaml`;
-    `config.yaml` there is **PROVISIONAL** (dropout profile + architecture freeze outstanding).
-
 * **[ACTIVE] Phase 1b Research Loop** — photorealism gates + blind review + avenue registry
   (`.hermes/plans/2026-08-30_photorealism-gates-blind-review.md`). M1 shipped 2026-08-30;
   M2 (calibration) + M3 (tick state machine) next. No training arms active.
@@ -179,6 +159,37 @@ Foundational 4-arm sweep isolating TREAD, Muon, and REPA contributions on 7k FFH
   * **Per-dim learned embedding** so cross-attention can bind z_g dim0 → head yaw. ✅ **Proved yaw binding**: dim0 controlled head yaw at steps 2000/2500 (first time ever). ❌ **Mode collapse at step 3500**: output darkness, no gradient/loss spike.
   * Root cause: basis added on all steps (~30% CFG-dropped), making it a pure noise injection (~1500 events) that accumulated and pushed output into clipping.
   * 💀 Tombstone: `docs/DISCONTINUATION_NOTICE.md`
+
+### Eidolon Identity Renderer (branch `arm/eidolon-identity-renderer`) — `[CONCLUDED — PIVOT]`
+
+* **Arm EIR — `eidolon-identity-renderer`** (`experiment-configs/eidolon-identity-renderer/`) `[CONCLUDED — PIVOT]` (2026-09-27; run 2026-09-25_0734 complete at 10k; verdict + scorecard in the ledger)
+  * Branch `arm/eidolon-identity-renderer`. From-scratch **FLUX-VAE latent** DiT (16ch, 128²,
+    patch 2 — P1-shaped) carrying the Eidolon adapter: 64-d AuraFace-LDA identity via adaLN
+    + z_g geometry via cross-attention, per-dim basis. **No text**, no REPA (hegre ships no
+    `dinov3_patches`), no warm-start, no PP stage, no weight donor.
+  * Question: does the two-source LDA stream (FFHQ per-image vectors + hegre persona
+    centroids) produce a **generalizable** identity mapping, or per-image lookup?
+  * **Gate (frozen before the first run):** held-out identity retrieval, rank-based R@1 with a
+    bootstrap CI LB > 0.5 on all three probes — FFHQ unseen-identity fidelity (index 6,996,
+    ref ~1.0), hegre unseen-persona generalization (index 32, ref **0.9504**), hegre
+    persistence (index 313, ref **0.8180**). The ceiling is **index-size dependent**, so each
+    number is read against the ceiling measured at its own index size.
+  * **Holdout locked:** `experiment-configs/eidolon-identity-renderer/holdout.json`, seed `20260925` —
+    6,996 FFHQ identities (sha256 `2967fafac71f2a75`) + 32 hegre personas (sha256
+    `705936d1c0f3b805`), identities whose vectors are never fed in training, so the gate
+    measures generalization rather than recall.
+  * Instrument, measured before the arm exists: `research/results/eidolon-identity-instrument/`.
+  * Pre-registration: `experiment-configs/eidolon-identity-renderer/provenance.yaml`;
+    `config.yaml` there is **PROVISIONAL** (dropout profile + architecture freeze outstanding).
+  * **⚠️ Criterion correction (2026-09-28) — do not re-adopt the gate above as a goal.** The
+    frozen gate scores identity against *real faces* through a recogniser. The root node now
+    states the product criterion: identity means **consistency across renders** (same point →
+    same person, across seeds/pose/steps); agreement with a real person is not a goal, and the
+    identity space very likely holds more valid combinations than there are real people. The
+    gate is recorded here as the gate *as it was frozen* — history, not a criterion. R@1 is
+    retired as a quality metric; the render-fidelity criterion is the one that matters now.
+  * **Residue:** `eir-launcher.timer` and `eir-heartbeat.timer` (1k-segment GPU machinery) belong
+    to this concluded arm and must be retired before any new arm claims the 4090.
 
 ---
 

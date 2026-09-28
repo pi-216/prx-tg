@@ -1,8 +1,16 @@
 # Experiment Directory Structure — the detail behind `AGENTS.md` §0
 
-> The generic method lives in the `scientific-experiment-structure` skill.
-> `AGENTS.md` §0 is prx-tg's law; **this document is the detail**. Where they
-> disagree, `AGENTS.md` §0 wins.
+> **This is a possibly-lagging copy of a shared method.** The generic method lives in the
+> `scientific-experiment-structure` skill — load it with
+> `skill_view(name='scientific-experiment-structure')` and re-read it at the start of
+> governance work, not this file. `AGENTS.md` §0 is prx-tg's law; this document is the
+> detail; where they disagree, §0 wins.
+>
+> **Nothing in this repo detects a skill-side change**, so nothing here tells you when this
+> file has fallen behind. Known gap as of 2026-09-28: the skill's **"The Return Edge"**
+> section (teleology fields `serves` / `tree_path` / `return_question`) is not reproduced
+> below — the operative rule is `AGENTS.md` §0.3 and §0.3a. Treat the line above as one
+> example of the kind of drift that happens, not as an inventory.
 
 ## 1. The split everything depends on
 

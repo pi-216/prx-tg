@@ -2,7 +2,45 @@
 
 Living map of all active, planned, and concluded workstreams. Each entry links to the experiment arm directory under `experiments/{slug}/`. Status tags: `[ACTIVE]`, `[CONCLUDED]`, `[TBD]`, `[DISCONTINUED]`.
 
-Last updated: 2026-09-24
+Last updated: 2026-09-28
+
+---
+
+## Goal (root node)
+
+**prx-tg is the renderer for the product vision of `eidolon`.** The vision belongs to
+eidolon; prx-tg is the vehicle that must deliver it. Every `tree_path` in this project
+starts here — an arm whose `tree_path[0]` is anything else is off-goal by construction.
+
+**The vision (eidolon):**
+1. I can pick a random spot in an identity space — *an* identity space, not necessarily AuraFace.
+2. I can move dials or toggle switches that have an impact on that spot in the identity space.
+3. I can render an image of that identity.
+4. I can move dials or toggle switches that have an impact on pose.
+
+**Deferred sub-products (named here so they are not mistaken for the current work):**
+* A **text → point-in-identity-space** helper: "a blonde woman with blue eyes and a round
+  face" resolves *somewhere near the valid centroid* of that description in the identity space.
+* A **visualizer**, which should/could be text-to-image (ponytail, no makeup, wearing glasses, …).
+
+**Current focus — the hurdle under this goal:** **high-fidelity** image generation, based on
+identity-space and pose definition. Fidelity is the operative term and it is a *product*
+criterion (is the rendered person a high-quality, convincing image of that identity?), not a
+recogniser score.
+
+**The carriers are hypotheses, not settled decisions.** The current concept is that identity
+space is *somehow connected to the LDA* (64-d AuraFace-LDA today) and that pose — possibly
+including **expression** — is *somehow connected to `z_g`* (50-d today). Either is the *current*
+proposed encoding. Neither is a requirement, and a result that only holds for this pair of
+carriers has not been shown to hold for the vision.
+
+> **Why this section exists.** Arm EIR wrote its return edge (provenance `serves:` /
+> `tree_path:` / `return_question:`) but wrote the goal node as *"render a chosen identity at a
+> chosen pose"* — **fidelity absent** — and asked, as its return question, whether a real
+> *recogniser* agrees. That is how an arm passes its mechanism gate while sitting nowhere near
+> the product: no measurement was ever pointed at the missing node, so render quality could only
+> ever be discovered late, as an anomaly, and generate an endless tail of explanatory probes.
+> The root now carries the term that was missing.
 
 ---
 

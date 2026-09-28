@@ -16,7 +16,9 @@ skill_view(name='scientific-experiment-structure')
 
 That skill is **shared with other projects — do not edit it to add prx-tg
 specifics.** This file is the mapping layer: it turns the generic method into
-prx-tg's concrete paths and laws. Where the two disagree, **this file wins.**
+prx-tg's concrete paths and laws. **The skill is the source of truth for process**; this
+file wins only on project-specific facts (paths, hostnames, hardware, naming). If the two
+appear to disagree on *method*, the skill wins and this file is stale — say so and fix it here.
 
 | Generic rule (in the skill) | prx-tg law (concrete, in this repo) |
 |---|---|
@@ -30,6 +32,7 @@ prx-tg's concrete paths and laws. Where the two disagree, **this file wins.**
 | "KILL → tombstone" | `docs/DISCONTINUATION_NOTICE*.md` |
 | "Tag the conclusion" | `arm/{slug}/concluded-{GO\|PIVOT\|PARK\|KILL}` → §0.4 |
 | "Report the result publicly" | `docs/blog/brief-{NN}-{slug}.md` → §0.5 |
+| "Descent writes the return edge / closure walks it" | `provenance.yaml` `serves:` / `tree_path:` / `return_question:` → §0.3, and the Goal root node in `docs/EXPERIMENT_TREE.md` → §0.3a |
 
 ## 0.1 The one rule that makes everything else possible
 
@@ -105,6 +108,13 @@ ledger_anchor: "dip-conv-head 10k continuation"   # heading text in docs/EXPERIM
 blog_brief: docs/blog/brief-03-dip-conv-head-10k.md
 blog_post: null                           # URL once published
 
+# --- the return edge (skill: "The Return Edge — Climbing Back Up the Goal Tree") ---
+# Teleology. `differs_from` is lineage (which config you forked); `serves` is purpose
+# (what problem you were chasing). Written at DESCENT, before the first run — see §0.3a.
+serves: "the eidolon renderer node — turn a point in the identity space plus a pose vector into a high-fidelity image of that person"
+tree_path: ["goal: <the Goal root node in docs/EXPERIMENT_TREE.md, verbatim>", "hurdle: <the node this arm exists to clear>", "this arm: <slug>"]
+return_question: "One sentence whose answer is exactly one of CLEARED / PIVOTED / NEW-HURDLE / INVALIDATED."
+
 # --- run provenance ---
 git_commit: 0209a2634473319b34e4f1c9749e8c175b0d41a1
 git_dirty: false
@@ -125,6 +135,42 @@ Validate before committing:
 ```bash
 python -c "import yaml; yaml.safe_load(open('experiment-configs/{slug}/provenance.yaml'))"
 ```
+
+## 0.3a The return edge — every arm descends from the Goal root
+
+From the skill's *"The Return Edge — Climbing Back Up the Goal Tree"* section. Loss-of-goal is
+the default failure mode of goal-driven work and it recurs at every scale; the cure is two
+symmetric obligations, not a document you re-read.
+
+**Descent writes the edge.** Before the first run, `provenance.yaml` carries:
+
+- `serves:` — the node this arm exists to resolve (its "why" parent), one sentence.
+- `tree_path:` — `[goal, hurdle, this-arm]`, with `tree_path[0]` taken verbatim from the
+  **Goal root node** in `docs/EXPERIMENT_TREE.md`.
+- `return_question:` — one sentence whose answer is exactly one of
+  `CLEARED` / `PIVOTED` / `NEW-HURDLE` / `INVALIDATED`.
+
+**Closure walks the edge.** The FIRST thing written at a verdict is the answer to
+`return_question` plus the parent node's new state — *before* any new work starts. The climb
+is a **re-check at each node**, not a static walk: at each step up, ask whether that node is
+still the right node, because the tree is discovered, not pre-planned. A verdict with an
+unanswered `return_question` is `PENDING`.
+
+**`serves` is not `differs_from`.** `differs_from` is lineage (which config you forked);
+`serves` is purpose (what problem you were chasing). Lineage exists everywhere; the
+teleology field is the one that is always missing when the goal goes out of sight.
+
+**The descent rule applies to the agent in-session, not just to files:** before opening a
+repo, starting an arm, or reading any state, restate its parent goal and what the work is
+FOR. If you cannot name the `serves` edge, stop — the inability to state it *is* the
+loss-of-goal happening live, and continuing anyway is how it propagates.
+
+**Adoption is backward-safe.** Concluded arms are grandfathered: absence is honest absence,
+not a defect. Never back-fill `serves` / `return_question` by guesswork — reconstruct from
+contemporaneous evidence only (the ledger's `Goal:` line, git history) and stamp it
+`_reconstructed`.
+
+---
 
 ## 0.4 Tags — so "Tag A tried this" is a real, resolvable thing
 
@@ -188,6 +234,17 @@ to warnings while still failing on broken links.
 5. **MUST** tag the conclusion (`arm/{slug}/concluded-...`).
 6. **MUST NOT** create a new top-level directory for experiment tracking. The
    structure above already exists — **extend it, do not add a fifteenth standard.**
+7. **MUST** write `serves:` / `tree_path:` / `return_question:` in `provenance.yaml` at
+   descent, **before the first run** (§0.3a), and **MUST** answer `return_question` at
+   closure — first thing written, before any new work starts, with the parent node's new
+   state. A verdict with an unanswered `return_question` is `PENDING`, same force as an
+   unfinished adversarial pass. If you cannot name the `serves` edge, **stop**: the
+   inability to state it is the loss of goal happening live.
+8. **MUST** start every `tree_path` at the **Goal root node** in `docs/EXPERIMENT_TREE.md`
+   — prx-tg is the renderer for eidolon's product vision, and the root carries the
+   *fidelity* term. An arm whose `tree_path[0]` is an internal metric (LPIPS, R@1, a
+   recogniser score) rather than a product goal is off-goal by construction: that is how
+   Arm EIR passed its mechanism gate while sitting nowhere near the product.
 
 ---
 

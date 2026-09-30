@@ -1,0 +1,83 @@
+{
+  "id": 5,
+  "name": "EIR render quality by checkpoint (eir-traj-i00)",
+  "folder": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00",
+  "created_at": "2026-09-30T11:22:01.927Z",
+  "updated_at": "2026-09-30T11:22:01.927Z",
+  "spectrum": {
+    "phase": 3,
+    "phase_label": "Distance \u2014 resolving adjacent ratings",
+    "covered": 10,
+    "total": 10,
+    "rd_mean": 131.68734695757118,
+    "rd_std": 2.24340503258132,
+    "trusted": 10,
+    "snr": 1.2022094984302962,
+    "reliability": 59.10535067020912,
+    "rd_slope": null,
+    "elo_min": 7825.722833402145,
+    "elo_max": 8142.354392073101
+  },
+  "image_rows": [
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step07000.png",
+      "elo": 8142.354392073101,
+      "rd": 133.4198937413881,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step06000.png",
+      "elo": 8094.830920722773,
+      "rd": 133.91785448844817,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step08000.png",
+      "elo": 8063.704238859444,
+      "rd": 129.35916980471112,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step10000.png",
+      "elo": 8047.888399431408,
+      "rd": 128.09554988972758,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step09000.png",
+      "elo": 8047.524065444438,
+      "rd": 129.55320521387304,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step03000.png",
+      "elo": 8046.938913247363,
+      "rd": 130.37220429804674,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step02000.png",
+      "elo": 7951.963543901698,
+      "rd": 131.4908176901132,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step05000.png",
+      "elo": 7889.536531385807,
+      "rd": 132.3147138634515,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step04000.png",
+      "elo": 7889.5361615318225,
+      "rd": 132.60390756895572,
+      "games_played": 9
+    },
+    {
+      "path": "/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/elo_pools/eir-traj-i00/i00_step01000.png",
+      "elo": 7825.722833402145,
+      "rd": 135.7461530169968,
+      "games_played": 9
+    }
+  ]
+}

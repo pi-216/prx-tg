@@ -147,3 +147,8 @@ research/avenues/gates/*/*/masks/
 # Blind-review pair images (regenerable)
 research/avenues/review/*/pairs/
 research/avenues/registry.json.bak-*
+
+# Ad-hoc agent scratch space: job ids, locks, transient logs. Nothing here is
+# evidence -- audit artifacts are moved into experiment-configs/{slug}/audit/ and
+# committed. Keeping it ignored is what lets a run start with git_dirty: false.
+/scratch/

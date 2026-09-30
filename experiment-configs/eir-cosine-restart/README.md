@@ -9,7 +9,7 @@
 | Parent | `eidolon-identity-renderer` (EIR) — resumed from its `checkpoint_step0010000.pt` |
 | Budget | 10,000 further steps (global horizon 10,000 → 20,000) ≈ 45.6 h on the 4090 |
 | Host | `game`, RTX 4090, under the 1k-SEGMENT scheduler policy |
-| Status | `planned` — soft trio + gate committed before the first run (§0.7 rule 2) |
+| Status | `active` — **running** since 2026-09-30 09:55 EDT (block 1, steps 10001+) |
 
 ## Hypothesis
 

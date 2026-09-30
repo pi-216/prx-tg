@@ -77,7 +77,7 @@ carriers has not been shown to hold for the vision.
   M2 (calibration) + M3 (tick state machine) next. No training arms active.
 
 * **Arm ECR — `eir-cosine-restart`** (`experiment-configs/eir-cosine-restart/`; hard data will
-  live under `experiments/eir-cosine-restart/`) `[PLANNED — registered 2026-09-30, not yet run]`
+  live under `experiments/eir-cosine-restart/`) `[ACTIVE — running since 2026-09-30 09:55 EDT]`
   * **One variable: the learning-rate schedule.** Resumes Arm EIR's step-10000 weights with the
     horizon raised 10000 → 20000, which re-heats the LR from its 1e-6 floor back to **1.56e-4**
     (`train.py get_lr_schedule()` is a pure function of global step vs `(warmup, total)` — no code

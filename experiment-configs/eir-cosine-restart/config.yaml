@@ -1,0 +1,216 @@
+# =============================================================================
+# eir-cosine-restart (Arm ECR) — canonical config
+#
+# FROZEN AT RUN START. Changing this file after the first micro-step voids the run
+# (AGENTS.md §0.2, §0.7 rule 2). Provenance, the descent block and the
+# pre-registered gate live in provenance.yaml beside this file.
+#
+# What this arm tests (ONE variable — the schedule):
+#   That the render-quality plateau observed on Arm EIR between ~6k and 10k was
+#   caused by the learning-rate SCHEDULE decaying to its 1e-6 floor, not by
+#   exhausted headroom. The intervention is a schedule re-heat and nothing else.
+#
+# Mechanism, exactly. production/train.py get_lr_schedule() is a pure function of the
+# GLOBAL step against (warmup_steps, total_steps) — there is no schedule offset to
+# set. Resuming EIR's step-10000 weights with total_steps raised 10000 -> 20000
+# therefore recomputes the LR at step 10000 as
+#     progress = (10000 - 500) / (20000 - 500) = 0.487
+#     lr       = 1e-6 + (3e-4 - 1e-6) * 0.5 * (1 + cos(pi * 0.487)) = 1.56e-4
+# i.e. the LR JUMPS from the 1e-6 measured at EIR step 10000 back to 52% of peak and
+# then glides to the floor at step 20000. No code change: the existing scheduler,
+# re-aimed. NOTE the re-heat is IMMEDIATE, not warmed up: step 10000 >> warmup 500,
+# so the first resumed step runs at 1.56e-4 with EIR's Adam/Muon state loaded. Watch
+# loss and grad_norm for the first ~100 steps (AGENTS.md NaN/divergence guard).
+#
+# How it differs from its parent (eidolon-identity-renderer, Arm EIR) — the WHOLE list:
+#   - training.total_steps       10000 -> 20000   (the intervention)
+#   - checkpoint.save_every      1000  -> 500     (instrumentation: the 500-step render
+#     grid the Elo pools are built from — validation fires from THIS branch)
+#   - checkpoint.keep_last_n     10    -> 20
+#   - validation.interval_steps  1000  -> 500     (cosmetic: a dead knob kept truthful)
+#   - resumed from EIR checkpoint_step0010000.pt WITH optimizer state
+# Everything else — adapter and its dropout profile, model geometry, TREAD, Muon
+# optimizer with its peak/min LR, both data sources, the locked identity-level
+# holdout, and the whole `sampling:` block — is byte-identical to Arm EIR, so the
+# renders stay comparable to the EIR pool at the same validation indices.
+#
+# Expected outcome:
+#   PASS if a blind intra-sample Elo ranking of the continuation's checkpoints
+#   separates its late half from its early half in >=1 of 2 identity pools (null
+#   p = 2.8e-6 per pool) with the other pool directionally consistent, and yaw plus
+#   cross-render identity consistency do not regress. The informative failure is a
+#   FLAT trajectory: it says the schedule was not the brake, so the next lever is
+#   not schedule at all.
+#
+# Gate, null, descent (serves / tree_path / return_question): provenance.yaml.
+# Holdout: the parent arm's locked manifest, referenced rather than copied so the
+# two cannot drift.
+# =============================================================================
+
+adapter:
+  name: "eidolon"
+  identity_dim: 64
+  z_g_dim: 50
+  # Arm O's proven per-dim basis. The CFG guard lives in adapters.py
+  # (EidolonAdapter.forward): the basis is only added when geometry is live,
+  # which is what stopped Arm N's collapse. Do not enable without that guard.
+  geometry_token_basis: true
+  cfg_dropout:
+    # Read by train.py L1372 for adapter_name == "eidolon": the adapter's own
+    # 3-way partition, NOT the legacy 7-stream `training.cfg_dropout` schema.
+    # Marginals of a partition; the remainder (0.40) = steps with BOTH live.
+    p_uncond: 0.10
+    # SETTLED 2026-09-24: 0.20 -- Arm O's profile, held deliberately.
+    # This is the only slice that forces identity to render a face with NO z_g, which
+    # is the pressure that stops z_g drifting into carrying facial structure. The gate
+    # probes exactly that (same identity, different z_g) and z_g carries identity at
+    # 8.31x the floor, so deleting this slice would trade gate safety for training mass.
+    # The cost is real and accepted: AuraFace leaks pose (yaw R^2~0.46, pitch~0.64), so
+    # this slice also teaches "invent a pose from identity" -- a state inference never
+    # uses (z_g is always supplied). Dropping it would raise the both-present fraction
+    # 0.40 -> 0.60, the slice where the disentanglement objective is trained; that
+    # variant is deliberately deferred to a SEPARATE arm so a geometry result stays
+    # attributable to Arm O's validated recipe.
+    # LEDGER OBLIGATION: state the both-present fraction (0.40) in the result entry.
+    p_identity_only: 0.20
+    # geometry without identity — Arm O's recipe, the slice that produced
+    # controlled yaw instead of the z_g -> identity shortcut.
+    p_geometry_only: 0.30
+
+model:
+  hidden_size: 768             # P1's body: a known-good shape, no lineage claim
+  depth: 18
+  num_heads: 12
+  patch_size: 2                # 128/2 = 64x64 tokens == the pixel ps16 grid
+  mlp_ratio: 4.0
+  in_channels: 16              # FLUX-AE latent channels
+  prediction_type: x_prediction
+  input_size: 128              # latent spatial size (1024px / 8x AE)
+  latent_space: true           # latent-mode discriminator (drives the loader)
+
+data:
+  source: "stratum"
+  stratum_dir: "/mnt/nas-ai-models/training-data/ffhq/stratum"   # validation/vdbg root
+  # Weighted interleaving — IMPLEMENTED NOW (MultiStratumDataset). `weight` is a
+  # relative DRAW SHARE per epoch: 2:1 = FFHQ drawn twice as often as hegre. The
+  # binding root gets one full pass; a shorter root is recycled within the epoch
+  # so the configured ratio actually holds for the whole epoch.
+  stratum_dirs:
+    - dir: "/mnt/nas-ai-models/training-data/ffhq/stratum"
+      weight: 2.0
+    - dir: "/mnt/nas-ai-models/training-data/eidolon/hegre_corpus"
+      weight: 1.0
+  # IDENTITY-BASIS GUARD: a mixed-basis identity slot trains silently, and that is
+  # the defect that produced the mixed-basis Eidolon arms. Both trees carry this
+  # fingerprint; the loader also measures the sampled vector norm (unit band).
+  basis_fingerprint: "120e1c5a1dc4f423"
+  allow_unstamped_identity: false
+  # LOCKED identity-level holdout: 6,996 FFHQ identity dirs + 32 hegre personas
+  # never enter training, so the gate measures generalization, not recall. The
+  # loader verifies each list's recorded sha256 and fails closed if the manifest
+  # does not describe the tree.
+  holdout_manifest: "experiment-configs/eidolon-identity-renderer/holdout.json"
+
+training:
+  # CONTINUATION: 10,000 further steps from EIR's step 10000 (horizon 20000).
+  # Still granted and monitored in 1k BLOCKS — the block boundary is the release
+  # point on the shared 4090 (1k-SEGMENT policy), so every 1k is BOTH a natural
+  # check-in and a resumable state. The pre-registered decision point is 15k.
+  #
+  # The intervention is this horizon alone: raising it re-heats the LR at the resume
+  # step from 1e-6 to 1.56e-4 (see the header). Nothing else in training changes.
+  total_steps: 20000
+  warmup_steps: 500
+  batch_size: 4
+  grad_accumulation_steps: 64  # effective batch = 256
+  grad_clip: 1.0
+  ema_decay: 0.9999
+  ema_warmup_steps: 1000
+  optimizer:
+    type: "Muon"
+    lr: 3.0e-4
+    min_lr: 1.0e-6
+    betas: [0.9, 0.95]
+    weight_decay: 0.03
+    eps: 1.0e-8
+    muon:
+      momentum: 0.95
+      nesterov: true
+      ns_steps: 5
+      adjust_lr_fn: "match_rms_adamw"
+  # The eidolon adapter drops both streams; disabling them avoids reading 8.4 MB
+  # of dinov3_patches per sample for nothing.
+  dino_patches:
+    enabled: false
+  repa:
+    enabled: false             # hegre ships zero dinov3_patches.npy -> REPA is not
+                               # available on the source that carries the mechanism
+  tread:
+    enabled: true
+    routing_probability: 0.5
+    route_start: 1
+    route_end: -1
+    self_guidance: true
+    guidance_scale: 3.0
+  timestep_sampling: "logit_normal"
+  logit_normal_loc: 0.0
+  logit_normal_scale: 1.0
+
+# ── 1k-block execution + the 500-step render grid (see training.total_steps) ────
+checkpoint:
+  save_every: 500          # 500, not 1000. production/train.py fires VALIDATION from
+                           # inside THIS branch (self.step % checkpoint_every == 0 ->
+                           # save_checkpoint() -> validate_fn()), so this knob sets the
+                           # render grid: 500 gives 21 Elo pool items (10.0k..20.0k)
+                           # instead of 11. Chosen over fixing the dead
+                           # `validation.interval_steps` knob because that fix is a code
+                           # change to shared production code, i.e. an infrastructure
+                           # variable riding along with the schedule variable.
+  keep_last_n: 20          # 20 x ~2.8GB = ~56GB; NAS holds 12TB free
+  save_optimizer: true     # REQUIRED to resume across a block boundary
+  output_dir: "checkpoints"
+
+# ── in-train hooks ─────────────────────────────────────────────────────────────
+# Sampling used by the hooks below. NOTE: the dual-CFG branch NAMES do not survive
+# the adapter switch. sample.py builds the ladder from the text/DINO code path, and
+# for adapter_name: eidolon its "text" branch is IDENTITY-only while its "dino"
+# branch is GEOMETRY-only. So here:
+#   text_scale  = the IDENTITY guidance scale
+#   dino_scale  = the GEOMETRY (pose) guidance scale
+# These are also exactly the two partition marginals, consumed at EVAL time: the
+# identity-only branch is the geometry-CFG negative and the geometry-only branch is
+# the identity-CFG negative. That is why p_identity_only 0.20 is load-bearing at
+# inference and not only during training -- a 0.00 profile would feed the sampler an
+# untrained branch on every eval render.
+sampling:
+  num_steps: 50
+  text_scale: 3.0       # IDENTITY guidance
+  dino_scale: 2.0       # GEOMETRY (pose) guidance
+  self_guidance: false  # dual CFG, 3 passes: uncond + identity-only + geometry-only
+  guidance_scale: 3.0   # unused while self_guidance is false
+
+validation:
+  enabled: true
+  # 500-step cadence: the render grid the Elo pools are built from, and the pose
+  # regression clause (z_g dim0 IS the yaw axis, |corr| 0.94-0.97) rides the same
+  # branch. MEASURED on the parent arm 2026-09-25: one full pass ~5-9 min
+  # (reconstruction alone 3:08), so 40 passes ~ 3-4 h of the ~45.6 h budget.
+  # EFFECTIVE CADENCE ONLY: production/train.py fires validation from inside the
+  # checkpoint branch, so the value below is NOT read by the training loop (verified
+  # 2026-09-30: zero usages of `interval_steps` in production/train.py). The cadence
+  # that actually happens is checkpoint.save_every = 500. This value is set to match
+  # so the file does not claim a cadence the code cannot deliver. (Repo-wide finding:
+  # ~100 configs carry this dead knob.)
+  interval_steps: 500
+  num_samples: 16
+  run_reconstruction: true
+  # Skipped for the eidolon adapter by the validator itself (validate.py's
+  # run_validation). The "dino" CFG branch still exists -- as the geometry pass.
+  run_dino_swap: false
+  run_text_manip: false
+  # DISABLED for this arm: the sweep collage IS the visualization here (labelled,
+  # 5 z_g values, fixed identity), whereas visual_debug draws FRESH noise on every
+  # call -- it passes no seed -- so its images cannot be tracked across steps and
+  # would double the hook cost at every multiple of 500.
+  visual_debug_interval: 0
+  visual_debug_num_samples: 4

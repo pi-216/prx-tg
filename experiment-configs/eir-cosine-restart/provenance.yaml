@@ -1,0 +1,105 @@
+arm: eir-cosine-restart
+arm_letter: ECR
+aliases: []
+mode: confirmatory            # gate frozen BEFORE the first run
+status: planned               # trio + gate committed; no run started yet
+hypothesis: >
+  The render-quality plateau observed on Arm EIR between ~6k and 10k steps was caused by the
+  learning-rate SCHEDULE decaying to its 1e-6 floor, not by exhausted headroom: re-heating the LR
+  on EIR's step-10000 weights (same model, same data, same optimizer, same dropout profile;
+  horizon raised 10000 -> 20000 so the LR resumes at 1.56e-4) resumes a measurable gain in blind
+  intra-sample human preference.
+falsified_if: >
+  The blind intra-sample Elo ordering over the continuation's checkpoints (10.0k..20.0k at
+  500-step spacing) shows no resolvable improvement: the pre-registered split test separates the
+  late half above the early half in 0 of 2 identity pools, AND the automatic trajectory at the
+  same 500-step grid (recon LPIPS, loss, detection attrition) also flattens.
+pre_registered_gate: >
+  PASS if the blind intra-sample Elo ranking separates late (15.0k-20.0k) above early
+  (10.0k-14.5k) PERFECTLY in >=1 of 2 identity pools (null p = 1/C(21,11) = 2.8e-6 per pool) with
+  the other pool directionally consistent (Spearman(checkpoint, Elo) > 0), AND both pools are
+  fully exhausted (every pair judged; an untrusted or unexhausted pool is INCONCLUSIVE, not FAIL),
+  AND no regression in the yaw response (z_g dim0 -> yaw, monotone, correct sign) or in
+  cross-render identity consistency. NOT gated on the tool's SNR meter: SNR >= 5 is structurally
+  unreachable for a within-run field ~300 Elo wide (it would need avg RD <= 30, i.e. ~130 games
+  per image against a maximum of 20).
+pre_registered_null: >
+  A fixed 11-item set holds the top 11 of 21 ranks with probability 1/C(21,11) = 3.0e-6 per pool
+  (computed before the run); pooled Spearman(checkpoint, Elo) has mean 0. A low SNR or an
+  untrusted pool is reported as "the instrument could not resolve", never as "no difference".
+differs_from: eidolon-identity-renderer
+diff_summary: |
+  ONE variable: the learning-rate schedule. Resumed from EIR checkpoint_step0010000.pt WITH
+  optimizer state. Verified by diff against the parent config — the complete list:
+  - training.total_steps        10000 -> 20000   (the intervention: re-heats LR at the resume
+                                                  step from 1e-6 to 1.56e-4, then cosine to floor
+                                                  at 20000)
+  - checkpoint.save_every       1000  -> 500     (instrumentation only: validation fires from the
+                                                  checkpoint branch, so this sets the 500-step
+                                                  render grid for the Elo pools)
+  - checkpoint.keep_last_n      10    -> 20      (storage: 20 x ~2.8GB; NAS has 12TB free)
+  - validation.interval_steps   1000  -> 500     (cosmetic: a dead knob, verified unread by
+                                                  production/train.py, kept truthful)
+  Byte-identical to EIR: adapter + cfg_dropout profile, model geometry, TREAD, Muon (peak 3e-4,
+  floor 1e-6), both data sources, locked identity-level holdout, and the whole `sampling:` block —
+  which is what keeps the continuation's renders comparable to the EIR pool at the same indices.
+
+# --- the four link fields (prx-tg addition) ---
+branch: arm/eir-cosine-restart
+tags: [arm/eir-cosine-restart/registered]
+conclusions: []               # filled at the verdict; numbered 1..N
+ledger_anchor: null           # no ledger entry yet — arm is `planned`
+blog_brief: null              # planned as docs/blog/brief-08-eir-cosine-restart.md (brief-06 is
+                              # the highest existing; brief-07 is owed by EIR)
+blog_post: null
+
+# --- the return edge ---
+# Teleology. `differs_from` is lineage (which config you forked); `serves` is purpose (what
+# problem you were chasing). Written at DESCENT, before the first run — see AGENTS.md §0.3a.
+serves: >
+  the fidelity hurdle under eidolon's goal — make the renderer produce a high-quality, convincing
+  image of a chosen identity, so that a point in identity space renders as a face worth looking at
+tree_path:
+  - "goal: prx-tg is the renderer for the product vision of `eidolon`"
+  - "hurdle: high-fidelity image generation, based on identity-space and pose definition"
+  - "this arm: eir-cosine-restart"
+return_question: >
+  Did a fresh learning-rate cycle on the EIR step-10000 weights resume measurable render-quality
+  gain, or was the ~6k-10k plateau independent of the schedule?
+# Answer at closure is exactly one of:
+#   CLEARED     — gain resumed: the schedule was the brake; continuing this configuration is a
+#                 live fidelity lever.
+#   PIVOTED     — no resolvable gain: the schedule was not the brake. The lever is something else,
+#                 and the operator's unnamed second half (capacity / spatial resolution /
+#                 optimization mobility) must be named before it gets its own arm.
+#   INVALIDATED — the arm cannot speak to the question (identity or yaw regressed, or the run
+#                 failed to produce a rankable trajectory).
+
+# --- run provenance (filled at run start) ---
+git_commit: null              # filled at run start; metadata.json records the executed commit
+git_dirty: null
+training_host: game
+training_gpu: RTX 4090
+training_steps: 20000         # global horizon; 10,000 executed by the parent arm, 10,000 added here
+data_snapshot: "FFHQ stratum 70k portraits + eidolon/hegre_corpus, 2:1 weighted draw; locked identity-level holdout (parent manifest)"
+agent_model: null
+agent_model_snapshot: null
+run_dirs: []                  # status: planned. Run dir will be
+                              # experiments/eir-cosine-restart/runs/<ts>/, seeded with a copy of
+                              # EIR's checkpoint_step0010000.pt so the resume has a valid parent
+                              # structure and the parent arm's evidence stays frozen.
+superseded_by: null
+supersedes: null
+
+# --- provenance of the descent itself ---
+provenance_note: >
+  Registered 2026-09-30 after the operator agreed to the arm and the descent statement was put to
+  them in the four terms they asked for (root, what we want to prove, what we want to achieve,
+  what will be measured). The root term is carried from docs/EXPERIMENT_TREE.md verbatim; the
+  fidelity term lives in the hurdle node, which is the defect Arm EIR suffered (its tree_path[0]
+  had no fidelity term, so no measurement was ever pointed at the missing node).
+foundation_check: >
+  Parent Arm EIR: mechanism tier PASS (pose controllable — z_g dim0 -> yaw, monotone, correct
+  sign at 10k; identity consistent — render-to-render R@1 1.0000, 6-seed cosine 0.9943), fidelity
+  tier NEVER MEASURED. A gated foundation is eligible to build on; this arm inherits the mechanism
+  result and NO fidelity claim. Its own gate is what would produce the first fidelity measurement.

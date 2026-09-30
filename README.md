@@ -415,7 +415,8 @@ All arms train for 5,000 steps on the same 7k FFHQ subset. Each arm isolates one
 | K | `spatial-window-baseline` | ✓ | Muon | ✓ | Quality metrics (CLIP + aesthetic + DWPose) baseline | ✅ Done | 2026-06 | J |
 | L | `spatial-window-2` | ✓ | Muon | ✓ | DINO patch spatial window (r=2) via 2x2 AvgPool2d | ✅ Done | 2026-06 | K |
 | M | `no-dino-patch-ablation` | ✓ | Muon | ✓ | DINO patch cross-attention disabled | ✅ Done | 2026-06 | K |
-| EIR | `eidolon-identity-renderer` | n/a | Muon | ✗ | FLUX-AE **latent** DiT + Eidolon adapter (identity LDA 64-d via adaLN + z_g via cross-attn); FFHQ **+ hegre**; no text | 🅿️ Pre-registered, not run | 2026-09 | P1 `latent-first-pretrain` |
+| EIR | `eidolon-identity-renderer` | n/a | Muon | ✗ | FLUX-AE **latent** DiT + Eidolon adapter (identity LDA 64-d via adaLN + z_g via cross-attn); FFHQ **+ hegre**; no text | 🔀 Concluded — PIVOT (2026-09-27) | 2026-09 | P1 `latent-first-pretrain` |
+| ECR | `eir-cosine-restart` | n/a | Muon | ✗ | **One variable: LR schedule re-heat.** Resumes EIR@step10000 with horizon 10000→20000, so the LR jumps 1e-6 → 1.56e-4 and glides back to the floor; renders every 500 steps | 🅿️ Pre-registered, not run | 2026-09 | EIR `eidolon-identity-renderer` |
 
 > ⚠️ The table above is historical: its premise ("5,000 steps on the same 7k FFHQ subset")
 > holds for arms A–M only. Arms registered after M (Eidolon series, Arm N/O, P1, dip-conv-head,

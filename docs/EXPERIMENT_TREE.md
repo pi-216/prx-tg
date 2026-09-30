@@ -76,6 +76,28 @@ carriers has not been shown to hold for the vision.
   (`.hermes/plans/2026-08-30_photorealism-gates-blind-review.md`). M1 shipped 2026-08-30;
   M2 (calibration) + M3 (tick state machine) next. No training arms active.
 
+* **Arm ECR — `eir-cosine-restart`** (`experiment-configs/eir-cosine-restart/`; hard data will
+  live under `experiments/eir-cosine-restart/`) `[PLANNED — registered 2026-09-30, not yet run]`
+  * **One variable: the learning-rate schedule.** Resumes Arm EIR's step-10000 weights with the
+    horizon raised 10000 → 20000, which re-heats the LR from its 1e-6 floor back to **1.56e-4**
+    (`train.py get_lr_schedule()` is a pure function of global step vs `(warmup, total)` — no code
+    change). Tests whether EIR's ~6k–10k render-quality plateau was **schedule-limited** or
+    **headroom-limited**. Renders every 500 steps (validation rides the checkpoint branch).
+  * Parent: `eidolon-identity-renderer` (EIR, `[CONCLUDED — PIVOT]`). Foundation check: EIR's
+    **mechanism** tier is PASS (pose controllable, identity consistent); its **fidelity** tier was
+    never measured — so ECR inherits **no fidelity claim**, and its gate is what would produce the
+    project's first fidelity measurement.
+  * Gate: blind intra-sample Elo, 2 identities (validation indices 0 and 4) × 21 checkpoints
+    (10.0k…20.0k at 500-step spacing), exhausted; late half perfect above early half in ≥1 of 2
+    pools (null p = 2.8e-6 per pool) with the other directionally consistent, and no yaw or
+    cross-render identity-consistency regression. Not gated on SNR (structurally unreachable here).
+  * Instrument: **human pairwise Elo** (`elo-picker`, :3010) — the first measurement in this
+    project that can answer "is this picture better?". First used 2026-09-30 on EIR's own
+    trajectory (6 pools, all exhaustively voted): quality rises with training — 6/6 positive
+    Spearman, 4/6 pools separate perfectly (p ≈ 3.7e-09), step 1000 last in all six — then
+    plateaus after ~6k.
+  * 📄 `experiment-configs/eir-cosine-restart/README.md`; descent + gate in `provenance.yaml`.
+
 ---
 
 ## Concluded

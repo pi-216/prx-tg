@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T23:51:42-0400",
+  "generated_at": "2026-09-30T07:15:26-0400",
   "calibration": "research/avenues/gates_calibration.json",
   "legs": {
     "real (A)": {
@@ -18,6 +18,19 @@
         "g0d_local_contrast_p5": 0.016861481983525058,
         "g0d_local_contrast_p50": 0.08148361850529909,
         "g0d_local_contrast_p95": 0.22096211125950022
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor": 150,
+        "g0a_sensor_noise_floor_full": 150,
+        "g0b_spectral_slope": 150,
+        "g0c_skin_texture_energy": 150,
+        "g0c_skin_texture_energy_full": 150,
+        "g0d_local_contrast_full_p5": 150,
+        "g0d_local_contrast_full_p50": 150,
+        "g0d_local_contrast_full_p95": 150,
+        "g0d_local_contrast_p5": 150,
+        "g0d_local_contrast_p50": 150,
+        "g0d_local_contrast_p95": 150
       }
     },
     "vae-ceiling (C)": {
@@ -36,32 +49,91 @@
         "g0d_local_contrast_p5": 0.016464425296134625,
         "g0d_local_contrast_p50": 0.07948511334757011,
         "g0d_local_contrast_p95": 0.21582104690372944
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor": 150,
+        "g0a_sensor_noise_floor_full": 150,
+        "g0b_spectral_slope": 150,
+        "g0c_skin_texture_energy": 150,
+        "g0c_skin_texture_energy_full": 150,
+        "g0d_local_contrast_full_p5": 150,
+        "g0d_local_contrast_full_p50": 150,
+        "g0d_local_contrast_full_p95": 150,
+        "g0d_local_contrast_p5": 150,
+        "g0d_local_contrast_p50": 150,
+        "g0d_local_contrast_p95": 150
       }
     },
     "eir-recon (B)": {
-      "in_band": 5,
+      "in_band": 10,
       "out_of_band": 1,
-      "scored": 6,
+      "scored": 11,
       "gates": {
+        "g0a_sensor_noise_floor": -1.5273461966287523,
         "g0a_sensor_noise_floor_full": -1.3081565089523792,
         "g0b_spectral_slope": -1.205749057824168,
+        "g0c_skin_texture_energy": 0.003755234461601099,
         "g0c_skin_texture_energy_full": 0.010743664708570577,
         "g0d_local_contrast_full_p5": 0.032478564856864976,
         "g0d_local_contrast_full_p50": 0.08780993095133453,
-        "g0d_local_contrast_full_p95": 0.17729125623591244
-      }
+        "g0d_local_contrast_full_p95": 0.17729125623591244,
+        "g0d_local_contrast_p5": 0.030847663530835605,
+        "g0d_local_contrast_p50": 0.08537725508823747,
+        "g0d_local_contrast_p95": 0.17492610903792696
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor": 126,
+        "g0a_sensor_noise_floor_full": 160,
+        "g0b_spectral_slope": 160,
+        "g0c_skin_texture_energy": 126,
+        "g0c_skin_texture_energy_full": 160,
+        "g0d_local_contrast_full_p5": 160,
+        "g0d_local_contrast_full_p50": 160,
+        "g0d_local_contrast_full_p95": 160,
+        "g0d_local_contrast_p5": 122,
+        "g0d_local_contrast_p50": 122,
+        "g0d_local_contrast_p95": 122
+      },
+      "flagged": [
+        {
+          "gate": "g0d_local_contrast_full_p5",
+          "value": 0.032478564856864976,
+          "edge": 0.02804627842269837,
+          "gap": 0.004432286434166606,
+          "n": 160,
+          "z": 4.792846383424271
+        }
+      ]
     },
     "eir-sweep": {
-      "in_band": 6,
+      "in_band": 11,
       "out_of_band": 0,
-      "scored": 6,
+      "scored": 11,
       "gates": {
+        "g0a_sensor_noise_floor": -1.6787790126270719,
         "g0a_sensor_noise_floor_full": -1.267153137260013,
         "g0b_spectral_slope": -1.3031963812730527,
+        "g0c_skin_texture_energy": 0.0014630510057840082,
         "g0c_skin_texture_energy_full": 0.010862210351559851,
         "g0d_local_contrast_full_p5": 0.013782442392160496,
         "g0d_local_contrast_full_p50": 0.09269796705080403,
-        "g0d_local_contrast_full_p95": 0.1954229979051484
+        "g0d_local_contrast_full_p95": 0.1954229979051484,
+        "g0d_local_contrast_p5": 0.012261333153583109,
+        "g0d_local_contrast_p50": 0.08968867320153448,
+        "g0d_local_contrast_p95": 0.19830216608113707
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor": 18,
+        "g0a_sensor_noise_floor_full": 18,
+        "g0b_spectral_slope": 18,
+        "g0c_skin_texture_energy": 18,
+        "g0c_skin_texture_energy_full": 18,
+        "g0d_local_contrast_full_p5": 18,
+        "g0d_local_contrast_full_p50": 18,
+        "g0d_local_contrast_full_p95": 18,
+        "g0d_local_contrast_p5": 18,
+        "g0d_local_contrast_p50": 18,
+        "g0d_local_contrast_p95": 18
       }
     },
     "arm-j": {
@@ -75,7 +147,33 @@
         "g0d_local_contrast_full_p5": 0.01085601863451302,
         "g0d_local_contrast_full_p50": 0.05211999453604221,
         "g0d_local_contrast_full_p95": 0.19147722870111467
-      }
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor_full": 10,
+        "g0b_spectral_slope": 10,
+        "g0c_skin_texture_energy_full": 10,
+        "g0d_local_contrast_full_p5": 10,
+        "g0d_local_contrast_full_p50": 10,
+        "g0d_local_contrast_full_p95": 10
+      },
+      "flagged": [
+        {
+          "gate": "g0a_sensor_noise_floor_full",
+          "value": -1.5528516530990601,
+          "edge": -1.536024010181427,
+          "gap": 0.016827642917633057,
+          "n": 10,
+          "z": 0.6826072297058866
+        },
+        {
+          "gate": "g0c_skin_texture_energy_full",
+          "value": 0.002529653848614544,
+          "edge": 0.002870676713064313,
+          "gap": 0.000341022864449769,
+          "n": 10,
+          "z": 1.2291779037877189
+        }
+      ]
     },
     "dip-conv-head": {
       "in_band": 3,
@@ -88,7 +186,41 @@
         "g0d_local_contrast_full_p5": 0.009796262009661983,
         "g0d_local_contrast_full_p50": 0.03179580371149562,
         "g0d_local_contrast_full_p95": 0.1198938622732054
-      }
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor_full": 11,
+        "g0b_spectral_slope": 11,
+        "g0c_skin_texture_energy_full": 11,
+        "g0d_local_contrast_full_p5": 11,
+        "g0d_local_contrast_full_p50": 11,
+        "g0d_local_contrast_full_p95": 11
+      },
+      "flagged": [
+        {
+          "gate": "g0a_sensor_noise_floor_full",
+          "value": -1.6928622830997815,
+          "edge": -1.536024010181427,
+          "gap": 0.1568382729183544,
+          "n": 11,
+          "z": 5.870695294289716
+        },
+        {
+          "gate": "g0d_local_contrast_full_p50",
+          "value": 0.03179580371149562,
+          "edge": 0.046015303768217566,
+          "gap": 0.01421950005672195,
+          "n": 11,
+          "z": 13.147773394037047
+        },
+        {
+          "gate": "g0d_local_contrast_full_p95",
+          "value": 0.1198938622732054,
+          "edge": 0.15619749128818514,
+          "gap": 0.03630362901497973,
+          "n": 11,
+          "z": 4.106763990452308
+        }
+      ]
     },
     "gamma2-noise-scale": {
       "in_band": 2,
@@ -101,7 +233,49 @@
         "g0d_local_contrast_full_p5": 0.007986282813362777,
         "g0d_local_contrast_full_p50": 0.031624762934039936,
         "g0d_local_contrast_full_p95": 0.10207203631712632
-      }
+      },
+      "per_gate_n": {
+        "g0a_sensor_noise_floor_full": 11,
+        "g0b_spectral_slope": 11,
+        "g0c_skin_texture_energy_full": 11,
+        "g0d_local_contrast_full_p5": 11,
+        "g0d_local_contrast_full_p50": 11,
+        "g0d_local_contrast_full_p95": 11
+      },
+      "flagged": [
+        {
+          "gate": "g0a_sensor_noise_floor_full",
+          "value": -1.770747271451083,
+          "edge": -1.536024010181427,
+          "gap": 0.23472326126965593,
+          "n": 11,
+          "z": 7.931926433530272
+        },
+        {
+          "gate": "g0b_spectral_slope",
+          "value": -1.8071133745210637,
+          "edge": -1.6085103463168087,
+          "gap": 0.19860302820425502,
+          "n": 11,
+          "z": 5.794624141920865
+        },
+        {
+          "gate": "g0d_local_contrast_full_p50",
+          "value": 0.031624762934039936,
+          "edge": 0.046015303768217566,
+          "gap": 0.01439054083417763,
+          "n": 11,
+          "z": 9.771940363865559
+        },
+        {
+          "gate": "g0d_local_contrast_full_p95",
+          "value": 0.10207203631712632,
+          "edge": 0.15619749128818514,
+          "gap": 0.05412545497105882,
+          "n": 11,
+          "z": 7.143732872884881
+        }
+      ]
     }
   }
 }

@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -393,40 +394,98 @@ def report() -> None:
           "| gate | band [p5, p95] | real (A) | **VAE ceiling (C)** | EIR recon (B) | EIR sweep | arm-j | dip-conv-head |",
           "|---|---|---|---|---|---|---|---|"]
 
-    def cell(rec: dict | None, band: dict | None) -> str:
+    # Per-leg panel count, so a gate computed over FEWER images than the leg holds is visible.
+    # This matters for the render legs: the masked gates only exist where seg2 found a
+    # face+neck region (eir-recon 126/160; real 150/150), so a masked render number is
+    # computed on a subset biased toward the renders that look like faces at all.
+    leg_n = {k: max((r.get("n", 0) for r in d.values()), default=0) for k, d in legs.items()}
+
+    # Reference sample size = the real leg's. ANY gate computed over fewer images than the
+    # reference shows its n, because a mean over a small subset is not the leg's mean.
+    ref_n = leg_n.get("real", 0)
+
+    def cell(rec: dict | None, band: dict | None, leg: str) -> str:
         if rec is None:
             return "—"
         v = rec["value"]
         mark = ""
         if band is not None:
             mark = " ✅" if band["p5"] <= v <= band["p95"] else " ❌"
-        return f"{v:.4f}{mark}"
+        n = rec.get("n", 0)
+        ntxt = f" *(n={n})*" if ref_n and n < ref_n else ""
+        return f"{v:.4f}{mark}{ntxt}"
 
     for g in gate_ids:
         b = bands.get(g)
         btxt = f"[{b['p5']:.4f}, {b['p95']:.4f}]" if b else "—"
         md.append("| `" + g + "` | " + btxt + " | "
-                  + " | ".join([cell(legs["real"].get(g), b),
-                                cell(legs["vae-ceiling"].get(g), b),
-                                cell(legs["eir-recon"].get(g), b),
-                                cell(legs["eir-sweep"].get(g), b),
-                                cell(ctx["arm-j"].get(g), b),
-                                cell(ctx["dip-conv-head"].get(g), b)]) + " |")
+                  + " | ".join([cell(legs["real"].get(g), b, "real"),
+                                cell(legs["vae-ceiling"].get(g), b, "vae-ceiling"),
+                                cell(legs["eir-recon"].get(g), b, "eir-recon"),
+                                cell(legs["eir-sweep"].get(g), b, "eir-sweep"),
+                                cell(ctx["arm-j"].get(g), b, "real"),
+                                cell(ctx["dip-conv-head"].get(g), b, "real")]) + " |")
 
     md += ["", "## Counts in band", "",
            "| leg | in band | out of band | of total |", "|---|---|---|---|"]
     summary = {"generated_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S%z"),
                "calibration": str(CALIB.relative_to(REPO)), "legs": {}}
-    for label, d in [("real (A)", legs["real"]), ("vae-ceiling (C)", legs["vae-ceiling"]),
-                     ("eir-recon (B)", legs["eir-recon"]), ("eir-sweep", legs["eir-sweep"]),
-                     ("arm-j", ctx["arm-j"]), ("dip-conv-head", ctx["dip-conv-head"]),
-                     ("gamma2-noise-scale", ctx["gamma2-noise-scale"])]:
+    rows = [("real (A)", legs["real"]), ("vae-ceiling (C)", legs["vae-ceiling"]),
+            ("eir-recon (B)", legs["eir-recon"]), ("eir-sweep", legs["eir-sweep"]),
+            ("arm-j", ctx["arm-j"]), ("dip-conv-head", ctx["dip-conv-head"]),
+            ("gamma2-noise-scale", ctx["gamma2-noise-scale"])]
+    for label, d in rows:
         n_in = sum(1 for g, r in d.items() if g in bands and r.get("in_band"))
         n_out = sum(1 for g, r in d.items() if g in bands and r.get("in_band") is False)
         n_tot = n_in + n_out
         summary["legs"][label] = {"in_band": n_in, "out_of_band": n_out, "scored": n_tot,
-                                  "gates": {g: r["value"] for g, r in d.items()}}
+                                  "gates": {g: r["value"] for g, r in d.items()},
+                                  "per_gate_n": {g: r.get("n") for g, r in d.items()}}
         md.append(f"| {label} | {n_in} | {n_out} | {n_tot} |")
+
+    # An "out of band" label is only as strong as the sample behind it. `z` = distance to the
+    # nearest band edge divided by the gate's OWN standard error (std/sqrt(n)). This exists
+    # because the stored arm evidence was computed on 10-11 images against bands calibrated on
+    # 995: on that sample a mean can sit outside the band purely by noise.
+    md += ["", "## Out-of-band gates, with their own noise", "",
+           "`z` = gap to the nearest band edge / (std/sqrt(n)). |z| < 2 means the number is not",
+           "separable from the band edge on its own sample — an out-of-band label, not evidence.",
+           "", "| leg | gate | value | nearest edge | gap | n | z | reading |",
+           "|---|---|---|---|---|---|---|---|"]
+    for label, d in rows:
+        for g, r in sorted(d.items()):
+            b = bands.get(g)
+            if not b or r.get("in_band") is not False:
+                continue
+            v, n, std = r["value"], r.get("n", 0), r.get("std", 0.0)
+            lo, hi = b["p5"], b["p95"]
+            edge = lo if v < lo else hi
+            gap = abs(v - edge)
+            se = (std / math.sqrt(n)) if n and std else float("nan")
+            z = gap / se if se == se and se > 0 else float("nan")
+            reading = ("not separable from the edge" if (z == z and z < 2)
+                       else "beyond its own noise")
+            md.append(f"| {label} | `{g}` | {v:.4f} | {edge:.4f} | {gap:.4f} | {n} | "
+                      f"{z:.2f} | {reading} |")
+            summary["legs"][label].setdefault("flagged", []).append(
+                {"gate": g, "value": v, "edge": edge, "gap": gap, "n": n, "z": z})
+
+    # DETECTION ATTRITION as a first-class number. A gate suite that silently drops images it
+    # cannot measure reports a mean over a biased subset: a render in which no segmenter finds
+    # a face is not a low score, it is ABSENT -- and absence never shows up in a mean. This is
+    # the same rule the arm README already states for probe metrics ("never silently drop
+    # no_face/skipped"); it had never been applied to the gate suite itself.
+    md += ["", "## Detection attrition (the defect that hides in the denominator)", "",
+           "| leg | panels on disk | images with a usable skin mask | attrition |",
+           "|---|---|---|---|"]
+    for label, leg in [("real (A)", "real"), ("vae-ceiling (C)", "vae-ceiling"),
+                       ("eir-recon (B)", "eir-recon"), ("eir-sweep", "eir-sweep")]:
+        panels = len(list((OUT / leg / "images").glob("*.png")))
+        masks = len(list((OUT / leg / "masks").glob("*.npy"))) if (OUT / leg / "masks").is_dir() else 0
+        pct = f"{100.0 * (panels - masks) / panels:.1f}%" if panels else "—"
+        md.append(f"| {label} | {panels} | {masks} | {pct} |")
+    md += ["", "`eir-recon` attrition is concentrated at step 1000 (11 of 16 panels) but persists",
+           "at 1-4 panels per later boundary; real faces show none at all."]
 
     (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
     (REPO / "docs" / "DEFICIT_REPORT_2026-09-28.md").write_text("\n".join(md) + "\n")

@@ -67,6 +67,46 @@ continuation. The other half is not decidable yet because it has not been named;
 *after* the schedule half is answered, since a schedule-limited plateau is the cheaper and
 prior explanation and would make the other one moot for now.
 
+## Measurement design — density, not spacing (operator correction, 2026-09-30)
+
+An earlier recommendation in this session was to sample the Elo pool at ≥2k spacing because
+"adjacent checkpoints are below the ~270 Elo resolution". **That recommendation was wrong**, and
+the operator's objection ("my evaluation is not a perfect sort … offering more images, even if
+neighbours don't differ much, will give you a stronger overall signal") is right, for two reasons:
+
+1. **Wrong resolution applied.** The ~270 Elo figure is the resolution of a *single pairwise
+   claim* (z = Δelo / √(RD₁²+RD₂²)). The estimand here is an **aggregate ordering** over the whole
+   set, whose sensitivity improves with the *number of comparisons and items* — each item's rating
+   is anchored by many opponents, and random judgment error averages out. Non-transitivity in
+   judgments ("A>B and B>C but C>A") is not an anomaly to avoid; it is what an Elo system exists
+   to absorb, and a strict sort would break on it. Trading a little per-comparison information for
+   many more comparisons is the right trade for a trajectory.
+2. **The tool agrees with the operator.** `elo-picker/app/commands/pick_comparison.rb` phase 3:
+   *"once everyone is trusted, refinement is about resolving adjacency: pair the closest-rated
+   uncompared images (min |Δelo|) to drive the scores apart."* After trust, the tool deliberately
+   spends clicks on the **most similar** pairs. Skipping neighbours discards exactly the clicks it
+   considers most valuable.
+
+**The cost is clicks, and it is quadratic.** The tool is exhaustive by design — *"every pair is
+judged exactly once; when every pair is done the run is over"* — so a pool of n costs C(n,2)
+comparisons. Observed: all six 10-item pools are exactly 45 = C(10,2) with 9 games per image.
+
+| pool size | comparisons | split-test null p (half vs half) |
+|---|---|---|
+| n=11 (1k grid) | 55 | 1/C(11,5) = 2.2e-3 |
+| n=21 (500 grid) | 210 | 1/C(21,11) = 2.8e-6 |
+| n=41 (500 grid, 5k→20k) | 820 | 1/C(41,20) — impractical |
+
+**Structural limit worth stating once:** the tool's own `SNR ≥ 5` gate is **unreachable** for a
+within-run field ~300 Elo wide. SNR = spread/(2·avg RD) would need avg RD ≤ 30, i.e. ~130 games
+per image, against a maximum of n−1 games. Dense pools therefore do **not** exist to raise SNR —
+they exist to sharpen the *aggregate* ordering (split test, Spearman, per-checkpoint mean rank).
+**Gate on the aggregate statistics, never on SNR.**
+
+Consequence for this arm: the 500-step grid serves the Elo pools as well as the automatic
+trajectory, and no separate sampling rule is needed — which also removes the HARKing risk a
+post-hoc spacing choice would have carried.
+
 ## The one absolute signal we have
 
 **Detection attrition:** 34/160 renders (21%) admit no detectable face+neck at all under

@@ -30,7 +30,7 @@ For the record the sources do exist in principle (the validation loader draws sa
 stratum tree), but the exact `recon_<idx>` → source mapping has not been reconstructed, and it
 is not worth reconstructing: **do not add real photos to a quality pool.**
 
-## Operator hypothesis (2026-09-30) — and its two separable halves
+## Operator hypothesis (2026-09-30) — what is testable in it
 
 > "There was still a lot of room to gain render quality, but the learning rate started dropping,
 > and the model didn't have the power to make big shifts."
@@ -41,14 +41,31 @@ collapse**, of which **33× happens in the last 2,000 steps**; the final 1,000 s
 of a cosine-to-floor schedule is **expected by construction** — the last fifth of the run was
 asked to refine with ~1/300th of the initial step size.
 
-**(b) POWER half — plausible, with a concrete mechanism.** The spatial token grid is coarse:
-patch 2 over a 128² latent = **64×64 tokens = 16 px per token** at 1024² output. Teeth,
-hairline and ears are high-frequency structure at exactly the scale that grid cannot address,
-and parameter count (235M) does not repair a coarse grid.
+**(b) The second half of the hypothesis is NOT nameable yet — and is not named.** The sentence
+"the model didn't have the power to make big shifts" is quoted above and left **undefined on
+purpose**. "Power" is not a term this project uses: it appears in no ledger, provenance, README,
+tree, plan or AGENTS.md (checked 2026-09-30); the only occurrences in the repo are in *this file*,
+because this file quotes it. An earlier draft of this note turned it into a "(b) POWER half —
+with a concrete mechanism", which promoted a loose word into a hypothesis by assumption. Struck.
 
-**They predict different fixes**, which is what makes the next arm decidable: (a) → a *fresh
-cosine* continuation (the arm's §9.3 cheap schedule probe); (b) → *finer latent/token
-resolution* or a different output space. One experiment separates them.
+Three **distinct** readings, each implying a different experiment, are worth separating — but the
+operator must say which was meant:
+
+* **capacity** — too few parameters/depth to represent the structure → widen or deepen.
+* **spatial resolution** — the token grid is too coarse to address it: patch 2 over a 128² latent
+  is a **64×64 grid = 16 px per token** at 1024² output, and teeth / hairline / ears are
+  high-frequency structure at exactly that scale. Fix: finer grid (patch 1) or higher latent res.
+* **optimization mobility** — the model could represent it, but training never *travels* there;
+  update sizes / gradient signal too small to reach that region, independent of the LR floor.
+  Fix: schedule, objective, or init.
+
+The fresh-cosine continuation tests the **schedule half only**. A flat result there does not
+choose among these three, and must not be reported as if it did.
+
+**What is decidable today:** the **schedule half only**, by one experiment — a fresh-cosine
+continuation. The other half is not decidable yet because it has not been named; naming it comes
+*after* the schedule half is answered, since a schedule-limited plateau is the cheaper and
+prior explanation and would make the other one moot for now.
 
 ## The one absolute signal we have
 

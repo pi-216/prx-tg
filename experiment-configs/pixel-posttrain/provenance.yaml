@@ -100,6 +100,8 @@ training_steps: 10000
 data_snapshot: "FFHQ stratum 70k portraits"
 agent_model: null
 agent_model_snapshot: null
-run_dirs: []              # populated on launch; canonical run FIRST
+run_dirs:                 # canonical run FIRST (§0.3); hard artifacts stay on the NAS
+  - experiments/pixel-posttrain/runs/2026-09-20_1413   # cancelled_tainted at step 2198 of 10000;
+                                                       # do NOT resume or build on this run
 superseded_by: null
 supersedes: null

@@ -68,6 +68,11 @@ CONTEXT_ARMS = {  # existing runs, read as-is (not re-measured)
     "dip-conv-head": REPO / "research" / "avenues" / "gates" / "dip-conv-head" / "step0010000" / "gates.jsonl",
     "gamma2-noise-scale": REPO / "research" / "avenues" / "gates" / "gamma2-noise-scale" / "10000" / "gates.jsonl",
 }
+# stratum2 (Sapiens2 5B) seg2 outputs for the renders + the real taxonomy-check sample.
+# Written by scratch/run_deficit_seg2.sh; consumed by `masks`/`taxonomy`.
+SEG2_OUT = Path("/mnt/nas-ai-models/training-data/prx-tg/diagnostics/deficit-2026-09-28/seg2")
+SKIN_V2 = 3                      # DOME_CLASSES_29 (seg2): Background0 Apparel1 Eyeglass2 Face_Neck3
+V2_LEGS = ("eir-recon", "eir-sweep")   # legs whose masks must come from seg2, not the stratum
 
 
 # --------------------------------------------------------------------------- build
@@ -94,9 +99,14 @@ def _save_png(arr: np.ndarray, path: Path) -> None:
     Image.fromarray(a.astype(np.uint8)).convert("RGB").save(path)
 
 
-def _skin_mask(seg: np.ndarray) -> np.ndarray | None:
-    """Reproduce calibrate_gates' mask EXACTLY: downsample(seg==2, 512) then erode r=1."""
-    m = downsample((seg == FACE_SKIN_V1), REF_SIZE)
+def _skin_mask(seg: np.ndarray, skin_id: int = FACE_SKIN_V1) -> np.ndarray | None:
+    """Reproduce calibrate_gates' mask EXACTLY: downsample(seg==skin, 512) then erode r=1.
+
+    `skin_id` differs by taxonomy: the stratum tree's v1 seg has Face_Neck = 2 (what the
+    frozen masked bands were calibrated with), while stratum2's seg2 is DOME_CLASSES_29 with
+    Face_Neck = 3. Passing the wrong id yields an empty or wrong mask, so the id is explicit.
+    """
+    m = downsample((seg == skin_id), REF_SIZE)
     m = erode(m, r=1)
     if m.sum() < MIN_SKIN_FRAC * REF_SIZE * REF_SIZE:
         return None
@@ -250,6 +260,80 @@ def _gate_bands(bands: dict) -> dict:
             if not k.startswith("_") and isinstance(v, dict) and "p5" in v and "p95" in v}
 
 
+def masks_from_seg2() -> int:
+    """Build eroded skin masks for the RENDER legs from stratum2 seg2 outputs.
+
+    G0a/G0c are skin-region gates; renders ship no seg mask, so on generated images the
+    frozen suite can only compute the whole-frame `_full` variants -- which every existing
+    arm verdict was scored on, and which may not rank renders by the property that matters.
+    Segmenting the renders (stratum-hq / Sapiens2 5B, operator steer 2026-09-28) makes the
+    masked gates available for them.
+
+    Masks are written pre-downsampled AND pre-eroded so `run_gates.py --masks` reproduces the
+    frozen calibration exactly (run_gates does not erode; calibrate_gates does).
+    """
+    made, missing = {}, []
+    for leg in V2_LEGS:
+        img_dir, mask_dir = OUT / leg / "images", OUT / leg / "masks"
+        if not img_dir.is_dir():
+            continue
+        mask_dir.mkdir(parents=True, exist_ok=True)
+        n = 0
+        for png in sorted(img_dir.glob("*.png")):
+            seg_path = SEG2_OUT / png.stem / "seg2.npy"
+            if not seg_path.is_file():
+                missing.append(f"{leg}/{png.stem}")
+                continue
+            m = _skin_mask(np.load(seg_path), skin_id=SKIN_V2)
+            if m is None:
+                missing.append(f"{leg}/{png.stem} (no usable skin)")
+                continue
+            np.save(mask_dir / f"{png.stem}.npy", m)
+            n += 1
+        made[leg] = n
+        print(f"[masks] {leg}: {n} masks from seg2 -> {mask_dir}", file=sys.stderr)
+    if missing:
+        print(f"[masks] no mask for {len(missing)} images (first 5: {missing[:5]})", file=sys.stderr)
+    return 0 if made else 1
+
+
+def taxonomy_check(min_iou: float = 0.85) -> int:
+    """Validate the taxonomy substitution BEFORE any masked render number is believed.
+
+    The frozen masked bands describe v1 masks (stratum `seg.npy`, Face_Neck=2). Render masks
+    come from seg2 (DOME_CLASSES_29, Face_Neck=3). Both aim at the same anatomy, but that is
+    an ASSUMPTION until measured: segment the SAME real faces both ways and compare the
+    resulting skin masks by IoU. Without this, a masked render number could be an artifact of
+    a different class boundary rather than a real measurement.
+    """
+    import json as _json
+    ids = _json.loads((OUT / "real" / "sampled.json").read_text())["kept"][:12]
+    ious, bad = [], []
+    for i in ids:
+        v1 = np.load(STRATUM / i / "seg.npy", mmap_mode="r")
+        v2_path = SEG2_OUT / i / "seg2.npy"
+        if not v2_path.is_file():
+            bad.append((i, "no seg2"))
+            continue
+        a = _skin_mask(np.asarray(v1), skin_id=FACE_SKIN_V1)
+        b = _skin_mask(np.load(v2_path), skin_id=SKIN_V2)
+        if a is None or b is None:
+            bad.append((i, "empty mask"))
+            continue
+        inter = int(np.logical_and(a, b).sum())
+        union = int(np.logical_or(a, b).sum())
+        ious.append(inter / union if union else 0.0)
+    mean_iou = float(np.mean(ious)) if ious else float("nan")
+    print(f"[taxonomy] v1(Face_Neck=2) vs seg2(Face_Neck=3) skin-mask IoU: "
+          f"n={len(ious)} mean={mean_iou:.3f} min={min(ious) if ious else float('nan'):.3f} "
+          f"bar={min_iou}", file=sys.stderr)
+    if bad:
+        print(f"[taxonomy] unusable: {bad[:5]}", file=sys.stderr)
+    ok = bool(ious) and mean_iou >= min_iou and not bad
+    print("[taxonomy]", "PASS" if ok else "FAIL", file=sys.stderr)
+    return 0 if ok else 1
+
+
 def verify(tol_mse: float = 0.002) -> int:
     """Self-check the legs: the VAE round-trip must reproduce its source image.
 
@@ -353,7 +437,8 @@ def report() -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["build", "build-roundtrip", "measure", "verify", "report", "all"])
+    ap.add_argument("cmd", choices=["build", "build-roundtrip", "measure", "verify", "masks",
+                                    "taxonomy", "report", "all"])
     ap.add_argument("--n", type=int, default=150)
     ap.add_argument("--seed", type=int, default=20260928)
     ap.add_argument("--device", default="cpu")
@@ -366,6 +451,10 @@ def main() -> int:
         build_roundtrip(device=args.device)
     if args.cmd in ("measure", "all"):
         measure()
+    if args.cmd == "masks":
+        return masks_from_seg2()
+    if args.cmd == "taxonomy":
+        return taxonomy_check()
     if args.cmd == "verify":
         return verify()
     if args.cmd in ("report", "all"):

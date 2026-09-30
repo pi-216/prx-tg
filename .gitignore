@@ -126,6 +126,16 @@ research/*
 !research/avenues/
 !research/avenues/votes/*.jsonl
 !research/avenues/gates/*.jsonl
+# The real gates layout is NESTED ({arm}/{step}/gates.jsonl), so the flat pattern above
+# never matched it — every G0 run's evidence, the artifact its verdict cites, was silently
+# ignored. Re-include the nested evidence.
+!research/avenues/gates/**/*.jsonl
+!research/avenues/gates/**/*.json
+# Materialized gate INPUTS (images + masks) are regenerable from the NAS by
+# scripts/harness/deficit_report.py; never commit them. Listed AFTER the whitelist so
+# these rules win.
+research/avenues/gates/*/*/images/
+research/avenues/gates/*/*/masks/
 
 # Soft research results — writeups + metric summaries (AGENTS.md §0.1: soft data
 # belongs in git). NOTE: negation must come after the global `*.jsonl` / `*.csv`

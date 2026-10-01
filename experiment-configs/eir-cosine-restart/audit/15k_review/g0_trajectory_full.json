@@ -1,0 +1,123 @@
+{
+  "10000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.2837179079651833,
+      "g0b_spectral_slope": -1.2900746641974143,
+      "g0c_skin_texture_energy_full": 0.010933974524959922,
+      "g0d_local_contrast_full_p5": 0.03279365791240707,
+      "g0d_local_contrast_full_p50": 0.09890543296933174,
+      "g0d_local_contrast_full_p95": 0.2032751467777416
+    }
+  },
+  "10500": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.2323705703020096,
+      "g0b_spectral_slope": -1.4478089416078215,
+      "g0c_skin_texture_energy_full": 0.013844460918335244,
+      "g0d_local_contrast_full_p5": 0.03229398418625351,
+      "g0d_local_contrast_full_p50": 0.11767217121087015,
+      "g0d_local_contrast_full_p95": 0.2287839688360691
+    }
+  },
+  "11000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.2385728880763054,
+      "g0b_spectral_slope": -1.583236004869365,
+      "g0c_skin_texture_energy_full": 0.010100773186422884,
+      "g0d_local_contrast_full_p5": 0.042075461184140295,
+      "g0d_local_contrast_full_p50": 0.12360850512050092,
+      "g0d_local_contrast_full_p95": 0.23326370026916265
+    }
+  },
+  "11500": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.176162626594305,
+      "g0b_spectral_slope": -1.3102125220149188,
+      "g0c_skin_texture_energy_full": 0.015400887990836054,
+      "g0d_local_contrast_full_p5": 0.04400917074235622,
+      "g0d_local_contrast_full_p50": 0.1162080152425915,
+      "g0d_local_contrast_full_p95": 0.20965171977877617
+    }
+  },
+  "12000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.3156353384256363,
+      "g0b_spectral_slope": -1.5007542406155314,
+      "g0c_skin_texture_energy_full": 0.007223927648738027,
+      "g0d_local_contrast_full_p5": 0.03522190879448317,
+      "g0d_local_contrast_full_p50": 0.11723445961251855,
+      "g0d_local_contrast_full_p95": 0.2408120296895504
+    }
+  },
+  "12500": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.1631366163492203,
+      "g0b_spectral_slope": -1.4165063853400086,
+      "g0c_skin_texture_energy_full": 0.016854631656315178,
+      "g0d_local_contrast_full_p5": 0.03944798282464035,
+      "g0d_local_contrast_full_p50": 0.13526566862128675,
+      "g0d_local_contrast_full_p95": 0.2636570353060961
+    }
+  },
+  "13000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.1611899100244045,
+      "g0b_spectral_slope": -1.351765785607821,
+      "g0c_skin_texture_energy_full": 0.019553987542167306,
+      "g0d_local_contrast_full_p5": 0.04789996142790187,
+      "g0d_local_contrast_full_p50": 0.14192808256484568,
+      "g0d_local_contrast_full_p95": 0.25954687781631947
+    }
+  },
+  "13500": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.202540285885334,
+      "g0b_spectral_slope": -1.2614825225837054,
+      "g0c_skin_texture_energy_full": 0.013786030642222613,
+      "g0d_local_contrast_full_p5": 0.038428459636634216,
+      "g0d_local_contrast_full_p50": 0.10885667987167835,
+      "g0d_local_contrast_full_p95": 0.22501663560979068
+    }
+  },
+  "14000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.2586410716176033,
+      "g0b_spectral_slope": -1.2867559998825417,
+      "g0c_skin_texture_energy_full": 0.010167431290028617,
+      "g0d_local_contrast_full_p5": 0.0315692551957909,
+      "g0d_local_contrast_full_p50": 0.1038998938165605,
+      "g0d_local_contrast_full_p95": 0.22622164501808584
+    }
+  },
+  "14500": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.1275581568479538,
+      "g0b_spectral_slope": -1.0042997561061247,
+      "g0c_skin_texture_energy_full": 0.020214859629049897,
+      "g0d_local_contrast_full_p5": 0.04525019237189554,
+      "g0d_local_contrast_full_p50": 0.11166822584345937,
+      "g0d_local_contrast_full_p95": 0.20209121447987854
+    }
+  },
+  "15000": {
+    "n": 16,
+    "gates": {
+      "g0a_sensor_noise_floor_full": -1.2190885692834854,
+      "g0b_spectral_slope": -1.173364981474144,
+      "g0c_skin_texture_energy_full": 0.013321547739906237,
+      "g0d_local_contrast_full_p5": 0.033819604650489055,
+      "g0d_local_contrast_full_p50": 0.10583260632120073,
+      "g0d_local_contrast_full_p95": 0.2167429111432284
+    }
+  }
+}

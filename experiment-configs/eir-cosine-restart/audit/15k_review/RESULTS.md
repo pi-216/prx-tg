@@ -125,3 +125,87 @@ statement is:
 Two things would change it before 20k: a verdict requires the run to reach 20k (it is currently
 stopped at step 15,006), and the pools must be rebuilt over the full 21-item grid so the real
 1/C(21,11) null applies.
+
+---
+
+# Addendum — the human read, and what the automatic replacement sees (2026-10-01)
+
+## The product criterion, read directly
+
+The arm's primary is *"human, blind, product criterion"*; the operator's read of the 10k→15k
+renders is the product criterion being applied, and it is a first-class datum:
+
+> *"The images turn from one way of terrible to another way of terrible. They get from smudged
+> half right to high detail total wrong. Face anatomy is absent."*
+
+Inspecting the renders directly (validation indices 0, 8, 16 at 10.0k and 15.0k) corroborates it,
+and it is **index-dependent and catastrophic**:
+
+- **index 0 @ 15.0k** — no coherent face at all: the features are merged into a rough, fibrous
+  mass; the eye sockets read as hollows, the nose as a textured smudge.
+- **index 8 / 16 @ 15.0k** — recognisable as a face, but "high detail, anatomically wrong": real
+  structure survives only in the eyes and (faintly) the lips and teeth; the nose, cheekbones,
+  jawline and ears are textured smudges with no underlying form.
+- **index 0 @ 10.0k (EIR origin)** — a different failure mode: coarse, sculpted, high-frequency
+  texture over a distorted armature.
+
+This is the defect Arm EIR was closed on: **structure absent, texture present.** It never left.
+
+## Why the Elo could not see it
+
+The Elo ranks on a single preference axis. When the two endpoints are *different kinds of wrong*
+rather than points on one quality scale, the operator's preference is unstable — and that is
+exactly what the data shows:
+
+- 13/30 and 17/30 late-vs-early inversions;
+- the two pools disagree on their own top (i00 → 11.0k, i04 → 15.0k);
+- top-vs-bottom z = 1.85 / 1.99 — **not separable**, i.e. the ordering as a whole is inside the
+  noise;
+- SNR 1.33 / 1.39 against the 5.0 "good enough" line, reliability 64% / 66%.
+
+So the flat Spearman is **two facts at once**, and they must not be collapsed: the trajectory does
+not rise measurably, *and* the instrument is too weak to have resolved it if it had. This is the
+"the instrument could not resolve" case, not a null result — and it is compounded by the axis
+mismatch above.
+
+## The automatic replacement is blind too (measured, no GPU)
+
+Reusing the frozen primitives (`run_gates.measure_image` → `calibrate_gates`), mask-free gates over
+all 16 indices × the 11 checkpoints. Bands are the real-FFHQ [p5, p95] from
+`gates_calibration.json`; **bold/fail** marks out-of-band:
+
+| step | n | `g0a_noise_floor_full` | `g0b_spectral_slope` | `g0c_texture_energy_full` | `g0d_contrast_p50` |
+|---|---|---|---|---|---|
+| band | | [-1.5360, -1.2225] | [-1.6085, -1.0926] | [0.0029, 0.0165] | [0.0460, 0.1136] |
+| 10000 | 16 | -1.2837 | -1.2901 | 0.0109 | 0.0989 |
+| 10500 | 16 | -1.2324 | -1.4478 | 0.0138 | 0.1177 ❌ |
+| 11000 | 16 | -1.2386 | -1.5832 | 0.0101 | 0.1236 ❌ |
+| 11500 | 16 | **-1.1762 ❌** | -1.3102 | 0.0154 | 0.1162 ❌ |
+| 12000 | 16 | -1.3156 | -1.5008 | 0.0072 | 0.1172 ❌ |
+| 12500 | 16 | **-1.1631 ❌** | -1.4165 | **0.0169 ❌** | 0.1353 ❌ |
+| 13000 | 16 | **-1.1612 ❌** | -1.3518 | **0.0196 ❌** | 0.1419 ❌ |
+| 13500 | 16 | **-1.2025 ❌** | -1.2615 | 0.0138 | 0.1089 |
+| 14000 | 16 | -1.2586 | -1.2868 | 0.0102 | 0.1039 |
+| 14500 | 16 | **-1.1276 ❌** | **-1.0043 ❌** | **0.0202 ❌** | 0.1117 |
+| 15000 | 16 | **-1.2191 ❌** | -1.1734 | 0.0133 | 0.1058 |
+
+Reading: the noise-floor gate sits **above the top of the real band in 6 of 10 continuation steps**
+— the renders carry *more* high-frequency energy than real faces, which is the quantitative shadow
+of "high detail". But nothing is monotone: the excursion count does not rise or fall with training,
+and `g0c` oscillates in and out of band. **The frozen G0 instrument is as flat as the Elo** — which
+reproduces the 2026-09-28 deficit report's own finding that G0 does not see this defect.
+
+## What this means for the arm
+
+1. **Direction is unchanged and now better supported:** the re-heat did not resume gain. But the
+   decisive evidence is the operator's structural read, not the Elo.
+2. **The arm's primary instrument cannot adjudicate its own question.** A full 21-item pool at 20k
+   would return a reading at SNR far below the good-enough line; the gate's own text makes an
+   untrusted or unexhausted pool INCONCLUSIVE, and this arm's pre-registration additionally
+   excludes SNR as a gate input. Completing the run to 20k will not produce a PASS/FAIL — it will
+   produce a tighter version of this same unresolved ordering.
+3. **The next arm needs a structure metric, not a preference Elo.** The already-validated
+   structural signal in the harness is *detection attrition* (deficit report: **21.2%** of EIR
+   recon renders had no usable skin mask vs **0.0%** for real faces) — a direct "anatomy absent"
+   measurement that the current gate does not use as a criterion.
+

@@ -1,5 +1,15 @@
 # ECR reboot-resume runbook — 2026-10-01
 
+> **EXECUTED 2026-10-01 08:55 EDT — resumed successfully.** Box came back at 08:34 (new boot_id
+> `7bdd7859-efbe-460b-9d40-e23b6a5e7f3e`), the held claim was released (event
+> `12:54:10Z ... released: 4090 job=prx-tg-eir-cosine-restart-v5 status=completed`), the v5 job
+> file was re-armed to `queued`, and `ecr-launcher.service` claimed it at 08:55:04 — training
+> resumed from `checkpoint_interrupt.pt` and was stepping again within ~4 min (14,922 → 14,928).
+> Timers re-armed automatically. Held claim → no wait behind turbo-carnival's ComfyUI job.
+> **Next:** the 15,000 boundary (~09:15) stops the segment and releases the 4090, at which point
+> ComfyUI (queued since 05:47) takes its FIFO turn and ECR's next window waits behind it.
+
+
 **Why this file exists:** box `game` is being rebooted while Arm ECR (`eir-cosine-restart`)
 was training. This is the deterministic record of what state the reboot left behind and the
 exact steps that resume it, so a later session does not have to re-derive them.

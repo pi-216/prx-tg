@@ -1,0 +1,225 @@
+{
+  "arm": "eir-cosine-restart",
+  "review": "15k",
+  "date": "2026-10-01",
+  "run": "experiments/eir-cosine-restart/runs/2026-09-30_0950",
+  "grid": [
+    10000,
+    10500,
+    11000,
+    11500,
+    12000,
+    12500,
+    13000,
+    13500,
+    14000,
+    14500,
+    15000
+  ],
+  "pools": {
+    "i00": {
+      "project_id": 11,
+      "n_images": 11,
+      "exhausted": true,
+      "games_per_image": 10,
+      "trusted": "11/11",
+      "snr": 1.3337,
+      "reliability_pct": 64.01,
+      "rd_mean": 124.52,
+      "elo_min": 7810.0,
+      "elo_max": 8142.1,
+      "spread": 332.2,
+      "ordering_by_elo": [
+        11000,
+        12000,
+        13500,
+        15000,
+        10000,
+        14000,
+        14500,
+        13000,
+        12500,
+        11500,
+        10500
+      ],
+      "spearman_checkpoint_elo": 0.1273,
+      "rank_of_15000": 4,
+      "prereg_form_split": "not perfect",
+      "prereg_form_null_p": 0.09091,
+      "equal_halves": {
+        "early": "10.0k..12.5k",
+        "late": "13.0k..15.0k",
+        "max_early": 8142.13249802893,
+        "min_late": 7969.275779453604,
+        "separates": false,
+        "inversions": 13,
+        "pairs": 30,
+        "null_p": 0.002165
+      },
+      "mean_elo_early": 7989,
+      "mean_elo_late": 8013,
+      "gap_top_bottom": 332,
+      "z_top_bottom": 1.854,
+      "per_claim_floor_2RD": 249,
+      "rows": [
+        {
+          "step": 10000,
+          "elo": 7999,
+          "rd": 128
+        },
+        {
+          "step": 10500,
+          "elo": 7810,
+          "rd": 127
+        },
+        {
+          "step": 11000,
+          "elo": 8142,
+          "rd": 126
+        },
+        {
+          "step": 11500,
+          "elo": 7889,
+          "rd": 124
+        },
+        {
+          "step": 12000,
+          "elo": 8126,
+          "rd": 125
+        },
+        {
+          "step": 12500,
+          "elo": 7969,
+          "rd": 127
+        },
+        {
+          "step": 13000,
+          "elo": 7969,
+          "rd": 123
+        },
+        {
+          "step": 13500,
+          "elo": 8079,
+          "rd": 124
+        },
+        {
+          "step": 14000,
+          "elo": 7985,
+          "rd": 123
+        },
+        {
+          "step": 14500,
+          "elo": 7984,
+          "rd": 121
+        },
+        {
+          "step": 15000,
+          "elo": 8047,
+          "rd": 121
+        }
+      ]
+    },
+    "i04": {
+      "project_id": 12,
+      "n_images": 11,
+      "exhausted": true,
+      "games_per_image": 10,
+      "trusted": "11/11",
+      "snr": 1.3945,
+      "reliability_pct": 66.04,
+      "rd_mean": 124.96,
+      "elo_min": 7825.8,
+      "elo_max": 8174.3,
+      "spread": 348.5,
+      "ordering_by_elo": [
+        15000,
+        14000,
+        11500,
+        12500,
+        12000,
+        10500,
+        10000,
+        13500,
+        11000,
+        14500,
+        13000
+      ],
+      "spearman_checkpoint_elo": 0.1727,
+      "rank_of_15000": 1,
+      "prereg_form_split": "PERFECT",
+      "prereg_form_null_p": 0.09091,
+      "equal_halves": {
+        "early": "10.0k..12.5k",
+        "late": "13.0k..15.0k",
+        "max_early": 8062.9437329412995,
+        "min_late": 7825.761636718142,
+        "separates": false,
+        "inversions": 17,
+        "pairs": 30,
+        "null_p": 0.002165
+      },
+      "mean_elo_early": 8003,
+      "mean_elo_late": 7997,
+      "gap_top_bottom": 349,
+      "z_top_bottom": 1.995,
+      "per_claim_floor_2RD": 250,
+      "rows": [
+        {
+          "step": 10000,
+          "elo": 7968,
+          "rd": 125
+        },
+        {
+          "step": 10500,
+          "elo": 8016,
+          "rd": 132
+        },
+        {
+          "step": 11000,
+          "elo": 7906,
+          "rd": 127
+        },
+        {
+          "step": 11500,
+          "elo": 8063,
+          "rd": 127
+        },
+        {
+          "step": 12000,
+          "elo": 8016,
+          "rd": 123
+        },
+        {
+          "step": 12500,
+          "elo": 8047,
+          "rd": 122
+        },
+        {
+          "step": 13000,
+          "elo": 7826,
+          "rd": 124
+        },
+        {
+          "step": 13500,
+          "elo": 7953,
+          "rd": 121
+        },
+        {
+          "step": 14000,
+          "elo": 8142,
+          "rd": 127
+        },
+        {
+          "step": 14500,
+          "elo": 7889,
+          "rd": 123
+        },
+        {
+          "step": 15000,
+          "elo": 8174,
+          "rd": 123
+        }
+      ]
+    }
+  }
+}

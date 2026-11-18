@@ -9,7 +9,7 @@
 | Parent | `eidolon-identity-renderer` (EIR) — resumed from its `checkpoint_step0010000.pt` |
 | Budget | 10,000 further steps (global horizon 10,000 → 20,000) ≈ 45.6 h on the 4090 |
 | Host | `game`, RTX 4090, under the 1k-SEGMENT scheduler policy |
-| Status | `active` — **running** since 2026-09-30 09:55 EDT (block 1, steps 10001+) |
+| Status | `concluded` — **PIVOT** (closed 2026-11-18, PRD-0001 T1; deliberately stopped 2026-10-02 at step 16,916; Elo gate recorded INCONCLUSIVE — instrument blind; see `provenance.yaml` + ledger) |
 
 ## Hypothesis
 

@@ -2,10 +2,25 @@ arm: eir-cosine-restart
 arm_letter: ECR
 aliases: []
 mode: confirmatory            # gate frozen BEFORE the first run
-status: paused                # DELIBERATE operator stop 2026-10-02 07:47 EDT at step 16916, 84 steps
-                              # short of the 17000 segment boundary. No further 1k segments scheduled
-                              # pending general-research-harness cleanup. NOT a failure, NOT a verdict:
-                              # the pre-registered gate remains uncomputed and no `verdict` is claimed.
+status: concluded             # closed 2026-11-18 by PRD-0001 T1. The deliberate operator stop of
+                              # 2026-10-02 at step 16916 stands as history in pause_record below;
+                              # PRD-0001 (ruled 2026-11-18) established that the pre-registered
+                              # gate was uncomputable at the stop AND uninformative at 20k — its
+                              # instrument cannot rank the endpoints the arm reached — so the arm
+                              # closes on the structural evidence with the Elo gate recorded
+                              # INCONCLUSIVE.
+verdict: PIVOT
+verdict_detail: >-
+  PIVOT — cosine LR re-heat (10k -> 16,916 steps) shifted renders from
+  smudged-half-right to high-detail-total-wrong (facial anatomy absent); pairwise
+  Elo (SNR=1.33/1.39) and G0 spectral bands proven blind to absent facial structure
+gate_status_at_closure: >-
+  INCONCLUSIVE — instrument cannot adjudicate its own question. The 21-item grid
+  through 20.0k never existed (run stopped at 16,916), so the 1/C(21,11) null was
+  never computable; the 15k decision point read 11-item pools (null 1/11, 32,000x
+  weaker) and is directional only. Completing to 20k would have returned the same
+  unresolved ordering at slightly higher n, not a PASS/FAIL.
+concluded_date: "2026-11-18"
 hypothesis: >
   The render-quality plateau observed on Arm EIR between ~6k and 10k steps was caused by the
   learning-rate SCHEDULE decaying to its 1e-6 floor, not by exhausted headroom: re-heating the LR
@@ -49,11 +64,15 @@ diff_summary: |
 
 # --- the four link fields (prx-tg addition) ---
 branch: arm/eir-cosine-restart
-tags: [arm/eir-cosine-restart/registered]
-conclusions: []               # filled at the verdict; numbered 1..N
-ledger_anchor: null           # no ledger entry yet — arm is `planned`
-blog_brief: null              # planned as docs/blog/brief-08-eir-cosine-restart.md (brief-06 is
-                              # the highest existing; brief-07 is owed by EIR)
+tags: [arm/eir-cosine-restart/registered, arm/eir-cosine-restart/concluded-PIVOT]
+conclusions:
+  - "1. The LR schedule was not the brake: over 6,916 re-heated steps the blind intra-sample Elo ordering stayed flat on both identity pools (Spearman +0.127 / +0.173; equal-halves late-vs-early separates in 0/2 pools with 13/30 and 17/30 inversions; late-minus-early means +23 / -6 Elo against a ~250-Elo per-claim floor). EIR's ~6k-10k plateau was not schedule-limited."
+  - "2. The re-heat changed the failure mode without touching the defect: by 15k the renders read 'high detail, total wrong' against EIR's 'smudged half right' — facial anatomy absent (index 0 @ 15k: no coherent face at all; indices 8/16: structure only in eyes and faintly lips/teeth). The defect Arm EIR closed on — structure absent, texture present — never left."
+  - "3. Both instruments are measured blind to absent facial anatomy: pairwise Elo (SNR 1.33/1.39, top-vs-bottom z = 1.85/1.99 not separable, pools disagree on their own top) cannot rank different kinds of wrong on one preference axis; the frozen G0 spectral/noise bands oscillate non-monotonically (g0a noise floor out-of-band HIGH in 6 of 10 continuation steps — the renders carry MORE high-frequency energy than real faces) and measure texture energy, not anatomy."
+  - "4. The pre-registered confirmatory gate is recorded INCONCLUSIVE, not computed: the 21-item/20k grid never existed, and PRD-0001 ruled that completing it could not produce a verdict the instrument can support. The PIVOT rests on the operator's structural read plus the measured instrument blindness, stated as such."
+  - "5. The measurement that DOES see the defect already exists on disk: detection attrition — 21.2% of EIR recon panels had no usable skin mask vs 0.0% on real FFHQ and 0.0% on the VAE floor (docs/DEFICIT_REPORT_2026-09-28.md). It becomes the structural gate (S1) for the next rung (PRD-0001 T2), per red line 4."
+ledger_anchor: "eir-cosine-restart closure at 16,916"
+blog_brief: docs/blog/brief-07-eir-ecr-anatomy-wall.md
 blog_post: null
 
 # --- the return edge ---
@@ -77,6 +96,22 @@ return_question: >
 #                 optimization mobility) must be named before it gets its own arm.
 #   INVALIDATED — the arm cannot speak to the question (identity or yaw regressed, or the run
 #                 failed to produce a rankable trajectory).
+return_answer: PIVOTED
+return_answer_date: "2026-11-18"
+return_answer_detail: >
+  A fresh learning-rate cycle on the EIR step-10000 weights did NOT resume measurable
+  render-quality gain: the Elo ordering stayed flat over the first 5,000 re-heated
+  steps on both identity pools and the late-vs-early deltas sat inside the noise floor
+  (audit/15k_review/RESULTS.md). The plateau was not schedule-limited — and the
+  question itself proved secondary: the decisive datum is that the renders changed
+  failure mode (smudged-half-right -> high-detail-total-wrong) while the defect
+  (facial anatomy absent) persisted, and the arm's own instruments are measured blind
+  to that defect. Parent-node state after the climb: the fidelity hurdle under the
+  Goal root STANDS, and its operative term is STRUCTURE, not preference and not
+  texture energy. The next node is not a bigger LR experiment but the Structural
+  Face-Anatomy Gate (PRD-0001 T2: detection attrition + landmark-plausibility band +
+  the yaw/identity regression pins), which red line 4 now makes a precondition of any
+  new GPU arm.
 
 # --- run provenance (filled at run start) ---
 git_commit: c141005c3e225733b91fcccb0b2141a093106d1a

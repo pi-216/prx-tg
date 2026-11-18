@@ -2,7 +2,10 @@ arm: eir-cosine-restart
 arm_letter: ECR
 aliases: []
 mode: confirmatory            # gate frozen BEFORE the first run
-status: active                # RUNNING from 2026-09-30 09:55 EDT; block 1 = steps 10001-11000
+status: paused                # DELIBERATE operator stop 2026-10-02 07:47 EDT at step 16916, 84 steps
+                              # short of the 17000 segment boundary. No further 1k segments scheduled
+                              # pending general-research-harness cleanup. NOT a failure, NOT a verdict:
+                              # the pre-registered gate remains uncomputed and no `verdict` is claimed.
 hypothesis: >
   The render-quality plateau observed on Arm EIR between ~6k and 10k steps was caused by the
   learning-rate SCHEDULE decaying to its 1e-6 floor, not by exhausted headroom: re-heating the LR
@@ -110,3 +113,34 @@ foundation_check: >
   sign at 10k; identity consistent — render-to-render R@1 1.0000, 6-seed cosine 0.9943), fidelity
   tier NEVER MEASURED. A gated foundation is eligible to build on; this arm inherits the mechanism
   result and NO fidelity claim. Its own gate is what would produce the first fidelity measurement.
+
+# --- deliberate pause (2026-10-02) ------------------------------------------
+# Recorded because quiescence is ambiguous from outside: a paused arm, a crashed arm and a
+# concluded arm are indistinguishable by observation alone. Intent must be readable.
+pause_record:
+  when: "2026-10-02T07:47:00-04:00"
+  stopped_at_step: 16916
+  segment_target: 17000
+  trigger: >
+    Operator directive 2026-10-02: the 1k blocks stop being scheduled "once this one is finished",
+    amended mid-session to "actually stop this one" — i.e. stop the running segment now rather than
+    letting it reach the 17000 boundary. Reason given: unresolved issues in the general research
+    harness are to be cleaned before more GPU is spent on this arm.
+  mechanism: >
+    SIGTERM to the trainer's OWN pid file (the same mechanism the 1k-segment heartbeat uses; never
+    pkill, whose pattern also matches the forked DataLoader workers). The trainer took its graceful
+    path -- "Training interrupted by user (SIGINT/SIGTERM) ... Saving checkpoint" -- and wrote
+    checkpoint_interrupt.pt (2,823,458,912 bytes, 2026-10-02 07:46:40 EDT), so no progress was lost.
+  telemetry_floor: 16916
+  state_after: >
+    ecr-launcher.timer and ecr-heartbeat.timer were both STOPPED and DISABLED before the SIGTERM, so
+    no relaunch is possible without a deliberate re-enable. Job prx-tg-eir-cosine-restart-v7 was
+    released `completed` (the only clean status the scheduler CLI offers besides `failed`; `failed`
+    was rejected because the stop was deliberate and is proved by the interrupt checkpoint, whereas
+    an unearned `failed` would write a false failure against this project). The 4090 returned to
+    `idle` with an empty queue, freeing ~13.3 GB for the queued requests behind us.
+  resume: >
+    Re-enable both timers. The launcher's latest_checkpoint() picks checkpoint_interrupt.pt
+    automatically and resumes at ~16916; next_job_id() will allocate a fresh
+    prx-tg-eir-cosine-restart-v8 because v7 is no longer `queued` (release rewrites the job file).
+  verdict_effect: none

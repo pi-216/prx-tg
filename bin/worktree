@@ -1,0 +1,143 @@
+#!/usr/bin/env sh
+# bin/worktree — deterministic per-ticket worktrees (harness standard).
+#
+#   bin/worktree <issue>            ensure the ticket's worktree; print its path
+#   bin/worktree --list             list this repo's harness worktrees
+#   bin/worktree --prune            drop registrations whose directory is gone
+#   bin/worktree --clean <issue>    remove the worktree (branch kept)
+#   bin/worktree --clean <issue> --branch   also delete branch work/issue-<N>
+#   bin/worktree --clean <issue> --force    remove even a dirty/stale leftover
+#   bin/worktree --help
+set -eu
+
+usage() {
+  sed -n '2,/^set -eu$/p' "$0" | sed 's/^# \{0,1\}//' | sed '$d'
+}
+
+cmd=ensure
+N=
+branch_delete=0
+force=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --help|-h) usage; exit 0 ;;
+    --list) cmd=list; shift ;;
+    --prune) cmd=prune; shift ;;
+    --clean) cmd=clean; shift ;;
+    --branch) branch_delete=1; shift ;;
+    --force) force=1; shift ;;
+    -*) printf 'WORKTREE ERROR unknown-option %s\n' "$1"; exit 2 ;;
+    *) if [ -z "$N" ]; then N="$1"; else printf 'WORKTREE ERROR unexpected-argument %s\n' "$1"; exit 2; fi; shift ;;
+  esac
+done
+
+err() { printf 'WORKTREE ERROR %s\n' "$1"; exit "${2:-4}"; }
+
+if [ "$cmd" = ensure ] || [ "$cmd" = clean ]; then
+  if [ -z "$N" ]; then printf 'WORKTREE ERROR issue-number-required\n'; exit 2; fi
+  case "$N" in
+    *[!0-9]*) printf 'WORKTREE ERROR issue-number-not-numeric %s\n' "$N"; exit 2 ;;
+  esac
+fi
+
+git rev-parse --git-common-dir >/dev/null 2>&1 || err "not-a-git-repo" 3
+
+MAIN=$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -n 1)
+[ -n "$MAIN" ] || err "cannot-resolve-live-tree" 3
+WTDIR="$MAIN/.worktrees"
+
+registered() {
+  git worktree list --porcelain | sed -n 's/^worktree //p' | grep -Fx -e "$1" >/dev/null 2>&1
+}
+
+link_shared() {
+  wt_path="$1"
+  for shared in .venv data; do
+    if [ -e "$MAIN/$shared" ] && [ ! -e "$wt_path/$shared" ]; then
+      ln -s "$MAIN/$shared" "$wt_path/$shared"
+    fi
+  done
+}
+
+case "$cmd" in
+  list)
+    printf 'WORKTREE LIST ok\n'
+    git worktree list --porcelain \
+      | awk '/^worktree /{p=$2} /^branch /{print p"\t"$2}' \
+      | grep -e '/\.worktrees/issue-' || true
+    exit 0
+    ;;
+  prune)
+    git worktree prune
+    printf 'WORKTREE PRUNE ok\n'
+    exit 0
+    ;;
+esac
+
+WT="$WTDIR/issue-$N"
+BR="work/issue-$N"
+
+if [ "$cmd" = clean ]; then
+  if registered "$WT"; then
+    if [ "$force" = 1 ]; then
+      git worktree remove --force "$WT" || err "remove-failed $WT"
+    else
+      git worktree remove "$WT" || err "worktree-dirty-or-locked $WT (commit or use --force)"
+    fi
+  elif [ -d "$WT" ]; then
+    [ "$force" = 1 ] || err "stale-directory $WT (re-run with --force)"
+    rm -rf -- "$WT"
+  fi
+  if [ "$branch_delete" = 1 ]; then
+    git branch -D "$BR" >/dev/null 2>&1 || true
+  fi
+  git worktree prune
+  if [ -d "$WT" ]; then err "clean-failed $WT"; fi
+  printf 'WORKTREE CLEAN %s\n' "$WT"
+  exit 0
+fi
+
+git worktree prune
+
+if registered "$WT"; then
+  link_shared "$WT"
+  printf 'WORKTREE RESUME %s\n' "$WT"
+  printf 'WORKTREE BRANCH %s\n' "$(git -C "$WT" rev-parse --abbrev-ref HEAD)" >&2
+  exit 0
+fi
+
+if [ -d "$WT" ]; then
+  err "stale-directory $WT (bin/worktree --clean $N --force, then re-run)"
+fi
+
+legacy=$(git worktree list --porcelain \
+  | awk '/^worktree /{p=$2} /^branch /{b=$2; print p"\t"b}' \
+  | grep -E "(^|[^0-9])issue-$N([^0-9]|$)" \
+  | head -n 1 || true)
+if [ -n "$legacy" ]; then
+  printf 'WORKTREE LEGACY %s\n' "$(printf '%s' "$legacy" | cut -f1)"
+  printf 'WORKTREE BRANCH %s\n' "$(printf '%s' "$legacy" | cut -f2)" >&2
+  exit 0
+fi
+
+mkdir -p "$WTDIR"
+
+if git show-ref --verify --quiet "refs/heads/$BR"; then
+  git worktree add "$WT" "$BR" >/dev/null 2>&1 || err "add-failed $WT (branch checked out elsewhere?)"
+  link_shared "$WT"
+  printf 'WORKTREE RECOVER %s\n' "$WT"
+elif git show-ref --verify --quiet "refs/remotes/origin/$BR"; then
+  git worktree add -b "$BR" --track "$WT" "origin/$BR" >/dev/null 2>&1 || err "add-failed $WT"
+  link_shared "$WT"
+  printf 'WORKTREE RECOVER %s\n' "$WT"
+else
+  git fetch origin --prune --quiet 2>/dev/null || printf 'WORKTREE WARN fetch-failed (using local refs)\n' >&2
+  git show-ref --verify --quiet refs/remotes/origin/main || err "origin-main-missing (fetch first)"
+  git worktree add -b "$BR" "$WT" origin/main >/dev/null 2>&1 || err "add-failed $WT"
+  link_shared "$WT"
+  printf 'WORKTREE CREATE %s\n' "$WT"
+fi
+
+printf 'WORKTREE BRANCH %s\n' "$BR" >&2
+printf 'WORKTREE BASE %s\n' "$(git -C "$WT" rev-parse --short HEAD)" >&2

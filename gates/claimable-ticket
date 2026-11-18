@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Readiness predicate: is there a claimable ticket? (PRD-0003)
+
+The scheduler runs this as a job's `ready.when` command and admits ONLY on exit 0:
+
+    0  work       at least one open issue satisfies the claim contract
+    1  empty      no claimable issue (a legitimate quiet skip)
+    2  unknown    could not determine — gh missing, throttled, refused, no auth,
+                  the contract unreadable, or the search timed out
+
+With `--inbox` the predicate is the pm-suggestion cap instead of a claimable ticket:
+
+    0  below cap  the awaiting-ruling count is under fleet.json's cap — the lane may run
+    1  at cap     the count is at or past the cap — park without spending a slot
+    2  unknown    the count could not be read — never 1
+
+Exit 2 is never 1. Folding "I could not ask" into "nothing to do" is what silenced
+the fleet on 2026-11-03; a rate limit must cost a visible `unknown`, never a calm
+`empty`. The inbox count is pm_reconcile's awaiting-ruling definition (pm-suggested,
+issue-typed, not Done, not approved), read once in scripts/producers/pm_reconcile.py,
+and the threshold is agents/fleet.json's `cap` — never the `/10` pm_reconcile prints.
+
+The predicate itself is `claimable()` in venture-infra's scripts/claim.py — the SAME
+read path the picker and the producer use, and it reads BOTH halves of the contract:
+type + claim labels over REST search, then board Status for exactly those candidates.
+Until 2026-11-04 this file admitted lanes on the label half alone, so an approved-but-
+`Blocked` ticket (ds4-queue#47) kept its lane running hourly with nothing to do. This
+file owns only the exit vocabulary — which is why the copy in each project repo needed
+no edit to inherit the fix.
+
+It lives in the repo of the project it gates (PRD-0003 §3) and is the same file in
+every project repo: only DEFAULT_REPO differs.
+
+The contract and the read path live in venture-infra whichever project's repo this
+gate sits in; VENTURE_INFRA has the same env-override/home-default shape as the
+producer's DS4Q_REPO, because the fleet is one box and a moved checkout is one
+variable.
+
+GH_TIMEOUT bounds one REST call; the scheduler's own predicate cap is 120 s. The
+backoff stays well under that cap — three attempts at most, 0 + 5 s + 20 s of sleep,
+each call capped at GH_TIMEOUT. VENTURE_GATE_RETRY_SLEEPS="0" removes the sleeps so
+a test can prove the throttle branch without waiting.
+
+Run by hand:   gates/claimable-ticket [repo] [--inbox]
+"""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+INFRA = Path(os.environ.get("VENTURE_INFRA",
+                            Path.home() / "source/activity/venture-infra"))
+sys.path.insert(0, str(INFRA / "scripts"))
+sys.path.insert(0, str(INFRA / "scripts" / "producers"))
+
+import gh_guard  # noqa: E402
+from claim import claimable  # noqa: E402
+
+EXIT_WORK, EXIT_EMPTY, EXIT_UNKNOWN = 0, 1, 2
+DEFAULT_REPO = "prx-tg"
+GH_TIMEOUT = 20
+RETRY_SLEEPS = tuple(
+    float(part) for part in
+    os.environ.get("VENTURE_GATE_RETRY_SLEEPS", "5,20").split(",") if part.strip()
+)
+
+
+def gh(argv):
+    """One bounded REST call. Raises; main() maps every failure to `unknown`."""
+    def call():
+        return subprocess.run(["gh"] + argv, capture_output=True, text=True,
+                              timeout=GH_TIMEOUT, check=True)
+    out = gh_guard.retrying(call, sleeps=RETRY_SLEEPS)
+    return json.loads(out.stdout or "[]")
+
+
+def fleet_cap() -> int:
+    """The pm-suggestion cap, read from agents/fleet.json — never a literal."""
+    return int(json.loads((INFRA / "agents" / "fleet.json").read_text())["cap"])
+
+
+def awaiting_count(repo, contract, gh) -> int:
+    """The awaiting-ruling count for this repo's board, via pm_reconcile's definition."""
+    from pm_reconcile import awaiting_items
+    raw = gh(["project", "item-list", str(contract["board_number"]),
+              "--owner", contract.get("org", "pi-216"),
+              "--limit", "500", "--format", "json"])
+    items = raw.get("items", []) if isinstance(raw, dict) else []
+    return len(awaiting_items(items))
+
+
+def main(argv):
+    args = argv[1:]
+    inbox = "--inbox" in args
+    repo_args = [a for a in args if a != "--inbox"]
+    repo = repo_args[0] if repo_args else DEFAULT_REPO
+    try:
+        contract = json.loads((INFRA / "contracts" / ("%s.json" % repo)).read_text())
+        if inbox:
+            cap = fleet_cap()
+            count = awaiting_count(repo, contract, gh)
+            if count < cap:
+                print("below cap: %d/%d awaiting ruling for %s" % (count, cap, repo))
+                return EXIT_WORK
+            print("cap: %d/%d awaiting ruling for %s — park without a grant"
+                  % (count, cap, repo))
+            return EXIT_EMPTY
+        found = claimable(contract, gh)
+    except Exception as exc:
+        print("unknown: %s: %s" % (type(exc).__name__, exc), file=sys.stderr)
+        return EXIT_UNKNOWN
+    if found:
+        print("work: %d claimable ticket(s) for %s, e.g. #%s"
+              % (len(found), repo, found[0].get("number")))
+        return EXIT_WORK
+    print("empty: no open issue for %s carries the claim labels at Status %r"
+          % (repo, contract.get("queue_column")))
+    return EXIT_EMPTY
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

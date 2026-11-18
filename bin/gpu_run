@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Detached-friendly GPU scheduler runner: poll -> activate -> heartbeat -> release."""
+import argparse
+import subprocess
+import sys
+import threading
+import time
+
+
+WAIT_VERDICTS = {
+    "not_my_turn",
+    "gpu_busy",
+    "thermal_cooldown",
+    "vram_insufficient",
+    "gpu_unhealthy",
+    "scheduler_unavailable",
+}
+
+
+def _call_scheduler(scheduler: str, *args: str) -> str:
+    proc = subprocess.run(
+        [sys.executable, scheduler, *args],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    lines = [ln.strip() for ln in (proc.stdout or "").splitlines() if ln.strip()]
+    return lines[-1] if lines else ""
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--gpu", default="4090")
+    parser.add_argument("--job-id", required=True)
+    parser.add_argument(
+        "--scheduler",
+        default="/mnt/nas-ai-models/gpu-scheduler/gpu_scheduler.py",
+    )
+    parser.add_argument("--poll-interval", type=float, default=30.0)
+    parser.add_argument("--heartbeat-interval", type=float, default=180.0)
+    parser.add_argument("--vram-used", type=float, default=16.0)
+    parser.add_argument("cmd", nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+
+    cmd = list(args.cmd)
+    if cmd and cmd[0] == "--":
+        cmd = cmd[1:]
+    if not cmd:
+        print("gpu_run: command required after --", file=sys.stderr)
+        return 2
+
+    while True:
+        verdict = _call_scheduler(args.scheduler, "poll", "--gpu", args.gpu, "--job-id", args.job_id)
+        print(f"[gpu_run] poll job={args.job_id} gpu={args.gpu} -> {verdict}", flush=True)
+        if verdict == "claimed":
+            break
+        if verdict in WAIT_VERDICTS or verdict.startswith("scheduler_unavailable"):
+            time.sleep(args.poll_interval)
+            continue
+        print(f"[gpu_run] terminal poll verdict: {verdict}", file=sys.stderr, flush=True)
+        return 2
+
+    act = _call_scheduler(
+        args.scheduler,
+        "activate",
+        "--gpu", args.gpu,
+        "--job-id", args.job_id,
+        "--progress-unit", "batch",
+    )
+    print(f"[gpu_run] activate -> {act}", flush=True)
+    if act != "activated":
+        _call_scheduler(args.scheduler, "release", "--gpu", args.gpu, "--job-id", args.job_id, "--status", "failed")
+        return 2
+
+    stop_event = threading.Event()
+    tick = {"count": 0}
+
+    def _hb_loop() -> None:
+        while not stop_event.wait(args.heartbeat_interval):
+            tick["count"] += 1
+            _call_scheduler(
+                args.scheduler,
+                "heartbeat",
+                "--gpu", args.gpu,
+                "--job-id", args.job_id,
+                "--progress", str(tick["count"]),
+                "--vram-used", str(args.vram_used),
+            )
+
+    hb_thread = threading.Thread(target=_hb_loop, daemon=True)
+    hb_thread.start()
+
+    rc = 1
+    try:
+        proc = subprocess.run(cmd)
+        rc = proc.returncode
+    finally:
+        stop_event.set()
+        hb_thread.join(timeout=5.0)
+        status = "completed" if rc == 0 else "failed"
+        rel = _call_scheduler(
+            args.scheduler,
+            "release",
+            "--gpu", args.gpu,
+            "--job-id", args.job_id,
+            "--status", status,
+        )
+        print(f"[gpu_run] release ({status}) -> {rel}", flush=True)
+
+    return rc
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

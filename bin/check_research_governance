@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+import pathlib
+import subprocess
+import sys
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+REQUIRED_DOCS = [
+    "AGENTS.md",
+    "PROJECT_STATUS.md",
+    "docs/experiment-structure.md",
+    "docs/EXPERIMENT_TREE.md",
+    "docs/EXPERIMENTS_AND_RESULTS.md",
+    "docs/pm/red-lines.md",
+]
+
+REQUIRED_PROVENANCE_KEYS = (
+    "arm",
+    "mode",
+    "hypothesis",
+    "falsified_if",
+    "pre_registered_gate",
+)
+
+
+def main() -> int:
+    errors: list[str] = []
+
+    for rel in REQUIRED_DOCS:
+        if not (ROOT / rel).exists():
+            errors.append(f"missing required governance file: {rel}")
+
+    if (ROOT / "docs" / "tangential-research.md").exists():
+        errors.append("docs/tangential-research.md is forbidden in-tree; use GitHub issues")
+
+    configs_dir = ROOT / "experiment-configs"
+    if not configs_dir.is_dir():
+        errors.append("experiment-configs/ directory missing")
+    else:
+        arm_dirs = sorted(d for d in configs_dir.iterdir() if d.is_dir())
+        if not arm_dirs:
+            errors.append("experiment-configs/ contains zero arm directories")
+        for arm_dir in arm_dirs:
+            for name in ("README.md", "config.yaml", "provenance.yaml"):
+                p = arm_dir / name
+                if not p.exists():
+                    errors.append(f"experiment-configs/{arm_dir.name}: missing {name}")
+            prov_path = arm_dir / "provenance.yaml"
+            if prov_path.exists():
+                try:
+                    data = yaml.safe_load(prov_path.read_text()) or {}
+                except Exception as exc:
+                    errors.append(f"experiment-configs/{arm_dir.name}/provenance.yaml: invalid YAML ({exc})")
+                    continue
+                for key in REQUIRED_PROVENANCE_KEYS:
+                    if not data.get(key):
+                        errors.append(f"experiment-configs/{arm_dir.name}/provenance.yaml: missing required key {key!r}")
+
+    res = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_agents_template_yaml.py")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if res.returncode != 0:
+        errors.append(f"check_agents_template_yaml.py failed: {res.stdout} {res.stderr}".strip())
+
+    if errors:
+        for err in errors:
+            print(f"GOVERNANCE FAIL: {err}", file=sys.stderr)
+        return 1
+
+    print(
+        f"research governance ok ({len(REQUIRED_DOCS)} docs, "
+        f"{len(list(configs_dir.iterdir()))} experiment-configs verified)"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

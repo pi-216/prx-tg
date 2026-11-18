@@ -1,7 +1,18 @@
+---
+harness_version: 1
+---
+
 # AGENTS.md — prx-tg Experiment Governance
 
 > Rules for any AI agent (Hermes, Claude Code, Codex, Cursor) working in this repo.
 > Violations of the MUST rules below invalidate the run.
+
+## Board-Driven Research & Anti-Tangent Firewall (`pi-216`)
+
+- **The GitHub Project board is the sole work queue.** `PROJECT_STATUS.md`, `EXPERIMENT_TREE.md`, and `EXPERIMENTS_AND_RESULTS.md` are read-only empirical records, never self-authored work queues.
+- **Zero inline sidequests.** If an experiment surfaces an unexpected anomaly, confound, or follow-up idea, do NOT investigate it inline or edit Markdown files to schedule follow-up work. Record the empirical observation in the arm's ledger entry, optionally file an unlabeled GitHub issue (`Task` or `Feature`, never `approved`), and halt.
+- **Worktrees:** Implement in the ticket's own worktree (`bin/worktree <N>` -> `.worktrees/issue-<N>` on branch `work/issue-<N>`), never in the live tree.
+- **Every commit must pass `bin/verify` (`VERIFY OK`).** No explanatory comments in touched files (`bin/check_comments`).
 
 ---
 

@@ -579,3 +579,68 @@ One level up: restate the renderer stage's goal and its honest metric. The stage
 - Trajectory data (git, 552 KB): `experiment-configs/eidolon-identity-renderer/audit/trajectory/`
 - Trajectory panels (NAS, 454 MB): `.../runs/2026-09-25_0734/audit_trajectory/`
 - Run: `experiments/eidolon-identity-renderer/runs/2026-09-25_0734/`
+
+---
+
+## eir-cosine-restart closure at 16,916 — `[CONCLUDED — PIVOT]`
+
+**Date:** 2026-11-18 (PRD-0001 T1)
+**Arm:** `experiment-configs/eir-cosine-restart/` — branch `arm/eir-cosine-restart`, tag `arm/eir-cosine-restart/concluded-PIVOT`
+**Run:** `experiments/eir-cosine-restart/runs/2026-09-30_0950/` — deliberately stopped by operator directive 2026-10-02 at step **16,916** (`checkpoint_interrupt.pt`, written by the SIGTERM handler); 6,916 of the 10,000 continuation steps executed.
+
+**Goal:** one variable — the LR schedule. EIR's step-10000 weights resumed with the horizon raised 10000 → 20000, re-heating the cosine LR from its 1e-6 floor to 1.56e-4. Question: was EIR's ~6k–10k render-quality plateau **schedule-limited** or **headroom-limited**?
+
+**Pre-registered gate (frozen before the first run, verbatim in `provenance.yaml`):** blind intra-sample Elo over 2 identity pools × 21 checkpoints (10.0k…20.0k at 500-step spacing), both exhausted; PASS iff the late half sits perfectly above the early half in ≥1 of 2 pools (null 1/C(21,11) = 2.8e-6 per pool) with the other pool directionally consistent, and no yaw or cross-render-identity regression. Not gated on SNR (structurally unreachable for a within-run field this wide).
+
+### Why the confirmatory gate reads INCONCLUSIVE, not FAIL
+
+At the deliberate stop the 21-item grid through 20.0k never existed, so the registered null was never computable; the 15k decision point read 11-item pools whose analogous null is 1/11 — **32,000× weaker** — and is recorded as a directional mid-run read only. PRD-0001 (ruled 2026-11-18) further established that running to 20k could not produce the verdict the gate promises: the instrument cannot rank the endpoints the arm actually reached (below). The gate's status of record is therefore **INCONCLUSIVE — the instrument cannot adjudicate its own question**, and the PIVOT below is ruled on the structural evidence, explicitly not on the Elo.
+
+### Empirical evidence
+
+**Blind intra-sample Elo at the 15k decision point** (`experiment-configs/eir-cosine-restart/audit/15k_review/RESULTS.md`; both pools exhausted — 110/110 games, 11/11 images trusted):
+
+| pool | Spearman(step, Elo) | SNR | equal-halves split | late−early mean Elo | top-vs-bottom |
+|---|---|---|---|---|---|
+| `i00` (project 11) | +0.127 | 1.334 | not perfect — 13/30 inversions | +23 (per-claim floor ≈249) | 332 Elo, z = 1.85 — not separable |
+| `i04` (project 12) | +0.173 | 1.395 | not perfect — 17/30 inversions | −6 (per-claim floor ≈250) | 349 Elo, z = 1.99 — not separable |
+
+The pools disagree on their own top (`i00` → 11.0k, `i04` → 15.0k). Recon LPIPS oscillates 0.79–0.85 across the grid with no monotone movement (n = 16 per point).
+
+**Frozen G0 bands over the continuation** (`audit/15k_review/g0_trajectory_full.json`; all 16 validation indices × each 500-step checkpoint 10.0k→15.0k, bands frozen at real-FFHQ [p5, p95]): `g0a_noise_floor_full` sits **above** the real band in **6 of 10** continuation steps — the renders carry *more* high-frequency energy than real faces, the quantitative shadow of "high detail" — and `g0d` is out in 7 steps while `g0c` oscillates. Nothing is monotone in training: the frozen G0 instrument is as blind as the Elo, reproducing the 2026-09-28 deficit report's finding on the parent arm.
+
+**The operator structural read** (15k-review Addendum — the product criterion applied directly to the renders, indices 0/8/16 at 10.0k vs 15.0k):
+
+> *"The images turn from one way of terrible to another way of terrible. They get from smudged half right to high detail total wrong. Face anatomy is absent."*
+
+Index-dependent and catastrophic: index 0 @ 15k has no coherent face at all (features merged into a fibrous mass); indices 8/16 keep real structure only in the eyes and faintly the lips and teeth. The defect Arm EIR closed on — **structure absent, texture present** — never left.
+
+**The measurement that does see it** (`docs/DEFICIT_REPORT_2026-09-28.md`): detection attrition — no usable skin mask on **21.2%** of EIR recon panels (34/160) vs **0.0%** on real FFHQ (0/150) and **0.0%** on the VAE floor (0/150). Automatic, structural, already on disk, and never wired into a gate — the gap PRD-0001 T2 closes.
+
+### Adversarial Pass
+
+- [x] Metric code under test — the Elo payloads are committed (`audit/15k_review/project_11_i00.json`, `project_12_i04.json`, `summary.json`); the G0 trajectory is committed (`g0_trajectory_full.json`), recomputed from the frozen harness primitives (`run_gates.measure_image` → `calibrate_gates`), no GPU
+- [x] Metric definition stable across compared checkpoints — one protocol over the whole 500-step grid: same 16 validation indices, same pools, exhaustive round-robin judging; G0 bands frozen at the real-FFHQ [p5, p95] from `gates_calibration.json`
+- [x] Result reproduced — the flat-Elo + G0-blindness reading independently reproduces the 2026-09-28 deficit report's conclusion on the parent arm (G0 does not see this defect), and the Addendum's re-measure over the continuation matches its direction
+- [x] Extremes and edge cases inspected — index 0/8/16 renders compared at 10.0k vs 15.0k per index (the Addendum's read); pool extremes checked for separability (z = 1.85 / 1.99 → not separable); the lone "PERFECT" 15k-rank-1 in `i04` is explicitly demoted (single item, 1/11 null, uncorroborated by `i00` which ranks it 4th)
+- [x] Headline numbers traced to exact artifacts — SNR 1.334/1.395, Spearman +0.127/+0.173, inversions 13/30 & 17/30 → `summary.json`; G0 excursions → `g0_trajectory_full.json`; attrition 21.2% / 0.0% / 0.0% with panel counts → deficit report table
+- [x] Every flaw found in review fixed or explicitly gated-not-fixed — the instrument flaw is **GATED, NOT FIXED**: PRD-0001 T2 builds the Structural Face-Anatomy Gate (S1 attrition, S2 landmark-plausibility residual band, S3 yaw/identity regression pins) with a pre-registered sensitivity test — PASS real FFHQ + VAE floor, FAIL EIR 10k + ECR 15k on on-disk renders
+- [x] Sanity check named that would FAIL if the instrument were broken — the 2026-09-30 Elo run on EIR's own trajectory (6 pools, exhaustively voted) *did* resolve a real trend: 6/6 positive Spearman, 4/6 pools separate perfectly (p ≈ 3.7e-9), step 1000 last in all six. The instrument is alive; it went flat on ECR because the endpoints are different kinds of wrong on orthogonal axes. Flatness here is axis mismatch, not instrument death — and that distinction is the finding.
+
+**Verdict: PIVOT** — not PASS, not KILL, not the gate's own verdict (the gate reads INCONCLUSIVE above).
+
+### Verdict
+
+**PIVOT.** The return answer is **PIVOTED**: the LR schedule was not the brake, and the schedule question was not the live one. Over 6,916 re-heated steps there is no resolvable gain on the arm's primary instrument; the renders moved from one failure mode to another while the defect — absent facial anatomy — persisted; and both candidate adjudicators (pairwise Elo, frozen G0 bands) are now *measured* blind to that defect, on the parent arm and on the continuation alike. The fidelity hurdle under the Goal root stands with its operative term restated as **structure**, not preference and not texture energy. Per red line 4 (added with this PRD), no new GPU arm runs without a pre-registered structural/anatomy gate; the next node is PRD-0001 T2, not a bigger LR experiment.
+
+Honest caveat carried into any reuse of this entry: the arm's `mode` is `confirmatory` and its registered PASS/FAIL was never computed — the verdict is a closure ruling (PRD-0001, founder-ruled 2026-11-18) on the structural record, with the Elo and G0 evidence cited as directional and as instrument-blindness proof respectively. Nothing in this entry is gate evidence at the registered null.
+
+### Artifacts
+
+- Provenance: `experiment-configs/eir-cosine-restart/provenance.yaml` (`status: concluded`, `verdict: PIVOT`, 5 numbered conclusions, `return_answer: PIVOTED`)
+- 15k decision point: `experiment-configs/eir-cosine-restart/audit/15k_review/` (`RESULTS.md` + Addendum, `summary.json`, `g0_trajectory_full.json`, raw pool payloads)
+- Pause record: `experiment-configs/eir-cosine-restart/audit/2026-10-02_pause/PAUSE.md`
+- Run + interrupt checkpoint (NAS): `experiments/eir-cosine-restart/runs/2026-09-30_0950/` (`checkpoint_interrupt.pt`, 2026-10-02 07:46:40 EDT; validation renders every 500 steps 10.5k→16.5k)
+- Structural signal: `docs/DEFICIT_REPORT_2026-09-28.md` (detection attrition table)
+- Blog brief: `docs/blog/brief-07-eir-ecr-anatomy-wall.md`
+- Tag: `arm/eir-cosine-restart/concluded-PIVOT`

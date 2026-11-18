@@ -40,6 +40,7 @@ backlog backward from the most recent step.
 | 04 | `brief-04-gamma2-noise-scale.md` | 2026-09-10 | NOT_BETTER + code post-mortem | brief ready |
 | 05 | `brief-05-vae-ceiling.md` | 2026-09-10 | Constraint discovered | brief ready |
 | 06 | `brief-06-latent-first-pivot.md` | 2026-09-12 → | in flight (Part 1 of 2) | brief ready |
+| 07 | `brief-07-eir-ecr-anatomy-wall.md` | 2026-10-01 → 2026-11-18 | EIR→ECR PIVOT + measured instrument blindness | brief ready |
 
 **Unblogged before this series:** the last prx-tg post is
 `2026-06-17-introducing-stratum-ffhq-multi-modal-enriched-face-dataset.md`. Also
@@ -84,6 +85,7 @@ Every brief has real face images on disk. Use these; do not settle for a diagram
 | 04 gamma2 | `experiments/gamma2-noise-scale/runs/2026-09-04_1440/visual_debug/step0010000/` — `collage.png` + `sample00..sample03_*.png` (5 files). Pair the step-10000 face with a real photo to make the "too dark" point. |
 | 05 VAE ceiling | `research/results/vae_ceiling/samples/` — real-vs-decoded triples: `000_real.png`, `000_flux_full1024_s2.76932.png`, `000_sdxl.png` (also `003_*`, `007_*`). The ideal figure: same face, real → FLUX decode → SDXL decode. |
 | 06 latent-first | `experiments/latent-first-pretrain/runs/2026-09-13_2225/validation/step0009000/text_only/` (20 faces) + `reconstruction/` (4). Decoded, text-driven output from Part 1. |
+| 07 anatomy wall | **The lead pair, same identity, same index:** `experiments/eidolon-identity-renderer/runs/2026-09-25_0734/validation/step0010000/reconstruction/recon_00000.png` (the 10k "smudged half right") vs `experiments/eir-cosine-restart/runs/2026-09-30_0950/validation/step0015000/reconstruction/recon_00000.png` (the 15k "high detail total wrong"); `recon_00008.png` for the second read. Mechanism still works — `.../step0015000/eidolon_identity_swap/pair0_collage.png` (identity across seeds) and `.../step0015000/eidolon_geometry_sweep/` (yaw dial). Verified to exist 2026-11-18. |
 
 Also available across all six: the per-step `reconstruction/` sets for
 before/after timelines (same prompt index at successive steps).

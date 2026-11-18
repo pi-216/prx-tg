@@ -2,7 +2,7 @@
 
 Living map of all active, planned, and concluded workstreams. Each entry links to the experiment arm directory under `experiments/{slug}/`. Status tags: `[ACTIVE]`, `[CONCLUDED]`, `[TBD]`, `[DISCONTINUED]`.
 
-Last updated: 2026-09-28
+Last updated: 2026-11-18
 
 ---
 
@@ -75,28 +75,6 @@ carriers has not been shown to hold for the vision.
 * **[ACTIVE] Phase 1b Research Loop** — photorealism gates + blind review + avenue registry
   (`.hermes/plans/2026-08-30_photorealism-gates-blind-review.md`). M1 shipped 2026-08-30;
   M2 (calibration) + M3 (tick state machine) next. No training arms active.
-
-* **Arm ECR — `eir-cosine-restart`** (`experiment-configs/eir-cosine-restart/`; hard data will
-  live under `experiments/eir-cosine-restart/`) `[ACTIVE — running since 2026-09-30 09:55 EDT]`
-  * **One variable: the learning-rate schedule.** Resumes Arm EIR's step-10000 weights with the
-    horizon raised 10000 → 20000, which re-heats the LR from its 1e-6 floor back to **1.56e-4**
-    (`train.py get_lr_schedule()` is a pure function of global step vs `(warmup, total)` — no code
-    change). Tests whether EIR's ~6k–10k render-quality plateau was **schedule-limited** or
-    **headroom-limited**. Renders every 500 steps (validation rides the checkpoint branch).
-  * Parent: `eidolon-identity-renderer` (EIR, `[CONCLUDED — PIVOT]`). Foundation check: EIR's
-    **mechanism** tier is PASS (pose controllable, identity consistent); its **fidelity** tier was
-    never measured — so ECR inherits **no fidelity claim**, and its gate is what would produce the
-    project's first fidelity measurement.
-  * Gate: blind intra-sample Elo, 2 identities (validation indices 0 and 4) × 21 checkpoints
-    (10.0k…20.0k at 500-step spacing), exhausted; late half perfect above early half in ≥1 of 2
-    pools (null p = 2.8e-6 per pool) with the other directionally consistent, and no yaw or
-    cross-render identity-consistency regression. Not gated on SNR (structurally unreachable here).
-  * Instrument: **human pairwise Elo** (`elo-picker`, :3010) — the first measurement in this
-    project that can answer "is this picture better?". First used 2026-09-30 on EIR's own
-    trajectory (6 pools, all exhaustively voted): quality rises with training — 6/6 positive
-    Spearman, 4/6 pools separate perfectly (p ≈ 3.7e-09), step 1000 last in all six — then
-    plateaus after ~6k.
-  * 📄 `experiment-configs/eir-cosine-restart/README.md`; descent + gate in `provenance.yaml`.
 
 ---
 
@@ -215,6 +193,15 @@ Foundational 4-arm sweep isolating TREAD, Muon, and REPA contributions on 7k FFH
     `disable --now`ed by the operator, unit files left on disk (so `systemctl --user enable
     --now …` re-arms them). Verified after: 0 `eir-*` timers listed, no trainer process. No
     timer watches this arm any more, and the arm holds no claim on the 4090.
+
+### EIR continuation — cosine LR re-heat (branch `arm/eir-cosine-restart`) — `[CONCLUDED — PIVOT]`
+
+* **Arm ECR — `eir-cosine-restart`** (`experiment-configs/eir-cosine-restart/`) `[CONCLUDED — PIVOT]` (2026-11-18, PRD-0001 T1; deliberately stopped at step 16,916 on 2026-10-02; verdict + evidence in the ledger)
+  * **One variable: the learning-rate schedule.** EIR@step-10000 resumed with horizon 10000 → 20000, re-heating the LR 1e-6 → 1.56e-4. Question: was the ~6k–10k plateau **schedule-limited** or **headroom-limited**?
+  * **Answer: neither — the question was the wrong one.** No resolvable gain over 6,916 re-heated steps (Spearman +0.127 / +0.173, equal-halves split 0/2 pools), and by 15k the renders had moved from "smudged half right" to "high detail total wrong" — **facial anatomy absent**, the EIR defect, unchanged.
+  * **Instrument blindness, measured:** the blind intra-sample Elo cannot rank different kinds of wrong on one preference axis (SNR 1.33/1.39, 13/30 & 17/30 inversions, extremes not separable), and the frozen G0 bands oscillate non-monotonically (`g0a` out-of-band HIGH 6/10 steps — texture energy above the real band, anatomy never measured). The pre-registered confirmatory gate is recorded **INCONCLUSIVE**, not computed — its 21-item/20k grid never existed.
+  * The signal that does see the defect: detection attrition **21.2%** (EIR recon) vs **0.0%** (real FFHQ) and **0.0%** (VAE floor) — `docs/DEFICIT_REPORT_2026-09-28.md`. The next node is the Structural Face-Anatomy Gate (PRD-0001 T2), and red line 4 now requires a structural gate before any new GPU arm.
+  * 📄 `experiment-configs/eir-cosine-restart/audit/15k_review/RESULTS.md` (+ Addendum — the human read and the G0 re-measure), `audit/2026-10-02_pause/PAUSE.md`; tag `arm/eir-cosine-restart/concluded-PIVOT`.
 
 ---
 

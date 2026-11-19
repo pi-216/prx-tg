@@ -1,0 +1,160 @@
+{
+  "gate": "structural_anatomy_gate",
+  "legs": [
+    {
+      "failed_axes": [
+        "detection_attrition",
+        "skin_mask_pass_rate",
+        "geometry_pass_rate"
+      ],
+      "metrics": {
+        "bbox_fill": {
+          "min": 0.00863626349416171,
+          "p5": 0.03745856289535682,
+          "p50": 0.5426188269541514,
+          "p95": 0.7158065940379882
+        },
+        "detection_attrition": 0.2125,
+        "geometry_pass_rate": 0.66875,
+        "mask_coverage": {
+          "min": 0.005481719970703125,
+          "p5": 0.009965896606445312,
+          "p50": 0.2500896453857422,
+          "p95": 0.4464683532714844
+        },
+        "n_images": 160,
+        "n_masks": 126,
+        "skin_mask_pass_rate": 0.7875
+      },
+      "name": "eir-recon",
+      "path": "full",
+      "set": "research/avenues/gates/deficit-2026-09-28/eir-recon",
+      "thresholds": {
+        "max_bbox_fill": 0.9,
+        "max_detection_attrition": 0.05,
+        "min_bbox_fill": 0.2,
+        "min_geometry_pass_rate": 0.9,
+        "min_mask_coverage": 0.002,
+        "min_skin_mask_pass_rate": 0.9
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "failed_axes": [],
+      "metrics": {
+        "bbox_fill": {
+          "min": 0.6744208611279563,
+          "p5": 0.711745336077931,
+          "p50": 0.7581723413109123,
+          "p95": 0.7832750582750583
+        },
+        "detection_attrition": 0.0,
+        "geometry_pass_rate": 1.0,
+        "mask_coverage": {
+          "min": 0.3101654052734375,
+          "p5": 0.31697788238525393,
+          "p50": 0.36456871032714844,
+          "p95": 0.3871137619018555
+        },
+        "n_images": 18,
+        "n_masks": 18,
+        "skin_mask_pass_rate": 1.0
+      },
+      "name": "eir-sweep",
+      "path": "full",
+      "set": "research/avenues/gates/deficit-2026-09-28/eir-sweep",
+      "thresholds": {
+        "max_bbox_fill": 0.9,
+        "max_detection_attrition": 0.05,
+        "min_bbox_fill": 0.2,
+        "min_geometry_pass_rate": 0.9,
+        "min_mask_coverage": 0.002,
+        "min_skin_mask_pass_rate": 0.9
+      },
+      "verdict": "PASS"
+    },
+    {
+      "failed_axes": [],
+      "metrics": {
+        "bbox_fill": {
+          "min": 0.09155755081681008,
+          "p5": 0.2861553885791146,
+          "p50": 0.6326175098520508,
+          "p95": 0.727957368714993
+        },
+        "detection_attrition": 0.0,
+        "geometry_pass_rate": 0.9666666666666667,
+        "mask_coverage": {
+          "min": 0.01599884033203125,
+          "p5": 0.14213848114013672,
+          "p50": 0.326263427734375,
+          "p95": 0.4131477355957029
+        },
+        "n_images": 150,
+        "n_masks": 150,
+        "skin_mask_pass_rate": 1.0
+      },
+      "name": "real",
+      "path": "full",
+      "set": "research/avenues/gates/deficit-2026-09-28/real",
+      "thresholds": {
+        "max_bbox_fill": 0.9,
+        "max_detection_attrition": 0.05,
+        "min_bbox_fill": 0.2,
+        "min_geometry_pass_rate": 0.9,
+        "min_mask_coverage": 0.002,
+        "min_skin_mask_pass_rate": 0.9
+      },
+      "verdict": "PASS"
+    },
+    {
+      "failed_axes": [],
+      "metrics": {
+        "bbox_fill": {
+          "min": 0.09155755081681008,
+          "p5": 0.2861553885791146,
+          "p50": 0.6326175098520508,
+          "p95": 0.727957368714993
+        },
+        "detection_attrition": 0.0,
+        "geometry_pass_rate": 0.9666666666666667,
+        "mask_coverage": {
+          "min": 0.01599884033203125,
+          "p5": 0.14213848114013672,
+          "p50": 0.326263427734375,
+          "p95": 0.4131477355957029
+        },
+        "n_images": 150,
+        "n_masks": 150,
+        "skin_mask_pass_rate": 1.0
+      },
+      "name": "vae-ceiling",
+      "path": "full",
+      "set": "research/avenues/gates/deficit-2026-09-28/vae-ceiling",
+      "thresholds": {
+        "max_bbox_fill": 0.9,
+        "max_detection_attrition": 0.05,
+        "min_bbox_fill": 0.2,
+        "min_geometry_pass_rate": 0.9,
+        "min_mask_coverage": 0.002,
+        "min_skin_mask_pass_rate": 0.9
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "required_legs": [
+    "real",
+    "vae-ceiling",
+    "eir-recon"
+  ],
+  "root": "research/avenues/gates/deficit-2026-09-28",
+  "separation_proven": true,
+  "thresholds": {
+    "max_bbox_fill": 0.9,
+    "max_detection_attrition": 0.05,
+    "min_bbox_fill": 0.2,
+    "min_geometry_pass_rate": 0.9,
+    "min_mask_coverage": 0.002,
+    "min_skin_mask_pass_rate": 0.9
+  }
+}
